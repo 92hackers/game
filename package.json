@@ -1,0 +1,17 @@
+{
+  "name": "weteach-trial-lesson",
+  "version": "0.0.0",
+  "description": "",
+  "author": {
+    "name": "92hackers",
+    "email": "chenyuan@weteach.info"
+  },
+  "main": "",
+  "keywords": [
+    "gene"
+  ],
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": "",
+  "license": "BSD-2-Clause-FreeBSD"
+}
