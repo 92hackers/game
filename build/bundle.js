@@ -44,27 +44,24 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(1);
-	module.exports = __webpack_require__(23);
-
+	var game = __webpack_require__(1);
+	game.init(document.getElementById('stageContainer'));
 
 /***/ },
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var game = __webpack_require__(2);
-	game.init(document.getElementById('stageContainer'));
-
-/***/ },
-/* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Stage = __webpack_require__(3);
-	var Ticker = __webpack_require__(15);
-	var Bitmap = __webpack_require__(16);
-	var mediator = __webpack_require__(17);
-	var resource = __webpack_require__(18);
-	var loading = __webpack_require__(22);
+	var Stage = __webpack_require__(2);
+	var Ticker = __webpack_require__(14);
+	var Bitmap = __webpack_require__(15);
+	var mediator = __webpack_require__(16);
+	var resource = __webpack_require__(17);
+	var loading = __webpack_require__(21);
+	var Hilo = __webpack_require__(3);
+	var Text = __webpack_require__(22);
+	var BitmapText = __webpack_require__(24)
+	var DOMElement = __webpack_require__(25)
+	var Drawable = __webpack_require__(12)
 
 	/**
 	 * @module weteach-trial-lesson/game
@@ -75,79 +72,891 @@
 	 * @requires weteach-trial-lesson/resource
 	 * @requires weteach-trial-lesson/loading
 	 */
+
+	var outerWidth = 800
+	var outerHeight = 450
+
+	var innerBgWidth = 637
+
+	var innerBgGapWidth = (outerWidth - innerBgWidth) / 2
+
 	var game = {
-	    init:function(stageContainer){
-	        this.stageContainer = stageContainer;
-	        this.bindEvent();
-	        loading.start();
-	        resource.load();
-	    },
-	    bindEvent:function(){
-	        var that = this;
-	        mediator.on('resource:loaded', function(event){
-	            loading.loaded(event.detail.num);
-	        });
+	  init: function(stageContainer) {
+	    this.stageContainer = stageContainer;
+	    this.bindEvent();
+	    loading.start();
+	    resource.load();
+	  },
+	  bindEvent: function() {
+	    var that = this;
+	    mediator.on('resource:loaded', function(event) {
+	      loading.loaded(event.detail.num);
+	    });
 
-	        mediator.on('resource:complete', function(){
-	            that.initGame();
-	        });
-	    },
-	    initGame:function(){
-	        this._initStage();
-	        this._initScene();
-	        mediator.fire('game:init');
-	        this.ticker.start();
-	    },
-	    tick:function(dt){
-	        this.fish.x += 3;
-	        if(this.fish.x > this.stage.width){
-	            this.fish.x = -this.fish.width;
+	    mediator.on('resource:complete', function() {
+	      that.initGame();
+	    });
+	  },
+	  initGame: function() {
+	    this._initStage();
+	    // this._initScene();
+	    // this.preScene();
+	    // this.earlyScene();
+	    // this.speechScene();
+	    // this.playCards()
+	    this.linkLink()
+	    mediator.fire('game:init');
+	    this.ticker.start();
+	  },
+	  tick: function(dt) {
+	    // this.fish.x += 3;
+	    // if (this.fish.x > this.stage.width) {
+	    //   this.fish.x = -this.fish.width;
+	    // }
+	  },
+	  _initStage: function() {
+	    var stage = this.stage = new Stage({
+	      width: outerWidth,
+	      height: outerHeight,
+	      renderType: 'dom',
+	      container: this.stageContainer,
+	      //   background: 'rgb(8, 45, 105)'
+	    });
+
+	    stage.enableDOMEvent(Hilo.event.POINTER_START, true);
+
+	    var ticker = this.ticker = new Ticker(60);
+	    ticker.addTick(stage);
+	    ticker.addTick(this);
+	  },
+	  _initScene: function() {
+	    var bg = this.bg = new Bitmap({
+	      x: 0,
+	      y: 0,
+	      image: resource.get('indexBg'),
+	      rect: [0, 0, outerWidth, outerHeight]
+	    });
+
+	    var title = this.text = new DOMElement({
+	      element: Hilo.createElement('p', {
+	        style: {
+	          color: '#fff',
+	          position: 'absolute',
+	          fontSize: '28px'
+	        },
+	        innerText: 'Choose a starting level'
+	      }),
+	      width: 300,
+	      height: 50,
+	      x: 50,
+	      y: 30,
+	    })
+
+	    var galleryWith = 150;
+	    var galleryHeight = 210;
+	    var galleryTop = 150;
+
+	    var pre = new Bitmap({
+	      x: 95,
+	      y: galleryTop,
+	      image: resource.get('pre'),
+	      rect: [0, 0, galleryWith, galleryHeight],
+	      style: {
+	        border: '3px solid rgb(66, 209, 252)'
+	      }
+	    })
+
+	    var early = new Bitmap({
+	      x: 285,
+	      y: galleryTop,
+	      image: resource.get('early'),
+	      rect: [0, 0, galleryWith, galleryHeight]
+	    })
+
+	    var speech = new Bitmap({
+	      x: 475,
+	      y: galleryTop,
+	      image: resource.get('speech'),
+	      rect: [0, 0, galleryWith, galleryHeight]
+	    })
+
+	    this.stage.addChild(bg, title, pre, early, speech);
+	  },
+	  preScene: function() {
+	    var atTheZoo = this.atTheZoo = new Bitmap({
+	      x: innerBgGapWidth,
+	      y: 0,
+	      image: resource.get('atTheZoo'),
+	      rect: [0, 0, innerBgWidth, outerHeight]
+	    })
+
+	    var leftMenuContainer = this.leftMenuContainer = new Bitmap({
+	      x: 16,
+	      y: 150,
+	      image: resource.get('menuBar'),
+	      rect: [0, 0, 48, 255]
+	    })
+
+	    var clock = this.clock = new Bitmap({
+	      x: 27,
+	      y: 164,
+	      image: resource.get('clock'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var face = this.face = new Bitmap({
+	      x: 27,
+	      y: 200,
+	      image: resource.get('face'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var hand = this.hand = new Bitmap({
+	      x: 27,
+	      y: 240,
+	      image: resource.get('hand'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var correct = this.correct = new Bitmap({
+	      x: 27,
+	      y: 287,
+	      image: resource.get('correct'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var incorrect = this.incorrect = new Bitmap({
+	      x: 27,
+	      y: 325,
+	      image: resource.get('incorrect'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var link = this.link = new Bitmap({
+	      x: 17,
+	      y: 357,
+	      image: resource.get('link'),
+	      rect: [0, 0, 48, 48]
+	    })
+
+	    var bubble = this.bubble = new Bitmap({
+	      x: 740,
+	      y: 148,
+	      image: resource.get('bubble'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var star = this.star = new Bitmap({
+	      x: 740,
+	      y: 201,
+	      image: resource.get('star'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var one = this.one = new Bitmap({
+	      x: 740,
+	      y: 255,
+	      image: resource.get('one'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var two = this.two = new Bitmap({
+	      x: 740,
+	      y: 306,
+	      image: resource.get('two'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var back = this.back = new Bitmap({
+	      x: 740,
+	      y: 357,
+	      image: resource.get('back'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    this.stage.addChild(bubble, one, two, back, star, atTheZoo, leftMenuContainer, clock, face, hand, correct, incorrect, link)
+	  },
+	  earlyScene: function() {
+	    var atTheZoo = this.favourite = new Bitmap({
+	      x: innerBgGapWidth,
+	      y: 0,
+	      image: resource.get('favourite'),
+	      rect: [0, 0, innerBgWidth, outerHeight]
+	    })
+
+	    var leftMenuContainer = this.leftMenuContainer = new Bitmap({
+	      x: 16,
+	      y: 150,
+	      image: resource.get('menuBar'),
+	      rect: [0, 0, 48, 255]
+	    })
+
+	    var clock = this.clock = new Bitmap({
+	      x: 27,
+	      y: 164,
+	      image: resource.get('clock'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var face = this.face = new Bitmap({
+	      x: 27,
+	      y: 200,
+	      image: resource.get('face'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var hand = this.hand = new Bitmap({
+	      x: 27,
+	      y: 240,
+	      image: resource.get('hand'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var correct = this.correct = new Bitmap({
+	      x: 27,
+	      y: 287,
+	      image: resource.get('correct'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var incorrect = this.incorrect = new Bitmap({
+	      x: 27,
+	      y: 325,
+	      image: resource.get('incorrect'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var link = this.link = new Bitmap({
+	      x: 17,
+	      y: 357,
+	      image: resource.get('link'),
+	      rect: [0, 0, 48, 48]
+	    })
+
+	    var bubble = this.bubble = new Bitmap({
+	      x: 740,
+	      y: 148,
+	      image: resource.get('bubble'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var star = this.star = new Bitmap({
+	      x: 740,
+	      y: 201,
+	      image: resource.get('star'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var one = this.one = new Bitmap({
+	      x: 740,
+	      y: 255,
+	      image: resource.get('one'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var two = this.two = new Bitmap({
+	      x: 740,
+	      y: 306,
+	      image: resource.get('two'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var back = this.back = new Bitmap({
+	      x: 740,
+	      y: 357,
+	      image: resource.get('back'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    this.stage.addChild(bubble, one, two, back, star, atTheZoo, leftMenuContainer, clock, face, hand, correct, incorrect, link)
+	  },
+	  speechScene: function() {
+	    var atTheZoo = this.favourite = new Bitmap({
+	      x: innerBgGapWidth,
+	      y: 0,
+	      image: resource.get('autumnFall'),
+	      rect: [0, 0, innerBgWidth, outerHeight]
+	    })
+
+	    var leftMenuContainer = this.leftMenuContainer = new Bitmap({
+	      x: 16,
+	      y: 150,
+	      image: resource.get('menuBar'),
+	      rect: [0, 0, 48, 255]
+	    })
+
+	    var clock = this.clock = new Bitmap({
+	      x: 27,
+	      y: 164,
+	      image: resource.get('clock'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var face = this.face = new Bitmap({
+	      x: 27,
+	      y: 200,
+	      image: resource.get('face'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var hand = this.hand = new Bitmap({
+	      x: 27,
+	      y: 240,
+	      image: resource.get('hand'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var correct = this.correct = new Bitmap({
+	      x: 27,
+	      y: 287,
+	      image: resource.get('correct'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var incorrect = this.incorrect = new Bitmap({
+	      x: 27,
+	      y: 325,
+	      image: resource.get('incorrect'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var link = this.link = new Bitmap({
+	      x: 17,
+	      y: 357,
+	      image: resource.get('leftArrow'),
+	      rect: [0, 0, 48, 48]
+	    })
+
+	    var bubble = this.bubble = new Bitmap({
+	      x: 740,
+	      y: 148,
+	      image: resource.get('bubble'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var star = this.star = new Bitmap({
+	      x: 740,
+	      y: 201,
+	      image: resource.get('star'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var one = this.one = new Bitmap({
+	      x: 740,
+	      y: 255,
+	      image: resource.get('one'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var two = this.two = new Bitmap({
+	      x: 740,
+	      y: 306,
+	      image: resource.get('two'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var back = this.back = new Bitmap({
+	      x: 740,
+	      y: 357,
+	      image: resource.get('rightArrow'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    this.stage.addChild(bubble, one, two, back, star, atTheZoo, leftMenuContainer, clock, face, hand, correct, incorrect, link)
+	  },
+	  playCards: function() {
+	    var bg = this.bg = new Bitmap({
+	      x: 0,
+	      y: 0,
+	      image: resource.get('indexBg'),
+	      rect: [0, 0, outerWidth, outerHeight]
+	    });
+
+	    var leftMenuContainer = this.leftMenuContainer = new Bitmap({
+	      x: 16,
+	      y: 150,
+	      image: resource.get('menuBar'),
+	      rect: [0, 0, 48, 255]
+	    })
+
+	    var clock = this.clock = new Bitmap({
+	      x: 27,
+	      y: 164,
+	      image: resource.get('clock'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var face = this.face = new Bitmap({
+	      x: 27,
+	      y: 200,
+	      image: resource.get('face'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var hand = this.hand = new Bitmap({
+	      x: 27,
+	      y: 240,
+	      image: resource.get('hand'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var correct = this.correct = new Bitmap({
+	      x: 27,
+	      y: 287,
+	      image: resource.get('correct'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var incorrect = this.incorrect = new Bitmap({
+	      x: 27,
+	      y: 325,
+	      image: resource.get('incorrect'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var link = this.link = new Bitmap({
+	      x: 17,
+	      y: 357,
+	      image: resource.get('leftArrow'),
+	      rect: [0, 0, 48, 48]
+	    })
+
+	    var bubble = this.bubble = new Bitmap({
+	      x: 740,
+	      y: 148,
+	      image: resource.get('bubble'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var star = this.star = new Bitmap({
+	      x: 740,
+	      y: 201,
+	      image: resource.get('star'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var bird = this.bird = new Bitmap({
+	      x: 720,
+	      y: 265,
+	      image: resource.get('bird'),
+	      rect: [0, 0, 75, 75]
+	    })
+
+	    var back = this.back = new Bitmap({
+	      x: 740,
+	      y: 357,
+	      image: resource.get('rightArrow'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var cardX = 258
+	    var cardY = 83
+	    var gap = 15
+
+	    var whiteBgBird = this.whiteBg = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
 	        }
-	    },
-	    _initStage:function(){
-	        var stage = this.stage = new Stage({
-	            width:320,
-	            height:400,
-	            renderType:'canvas',
-	            container:this.stageContainer
-	        });
+	      }),
+	      width: 133,
+	      height: 173,
+	      x: cardX,
+	      y: cardY,
+	    })
 
-	        var ticker = this.ticker = new Ticker(60);
-	        ticker.addTick(stage);
-	        ticker.addTick(this);
-	    },
-	    _initScene:function(){
-	        var fish = this.fish = new Bitmap({
-	            x:100,
-	            y:100,
-	            image:resource.get('fish'),
-	            rect:[0, 0, 174, 126],
-	            onUpdate:function(){
-	                this.alpha += this.alphaSpeed;
-	                if(this.alpha < 0){
-	                    this.alpha = 0;
-	                    this.alphaSpeed *= -1;
-	                }
-	                else if(this.alpha > 1){
-	                    this.alpha = 1;
-	                    this.alphaSpeed *= -1;
-	                }
-	            }
-	        });
-	        fish.alphaSpeed = 0.02;
+	    var brownBird = new Bitmap({
+	      x: cardX + 30,
+	      y: cardY + 35,
+	      image: resource.get('brownBird'),
+	      rect: [0, 0, 73, 90]
+	    })
 
-	        var bg = this.bg = new Bitmap({
-	            image:resource.get('bg')
-	        });
+	    var whiteBgDuck = this.whiteBg = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: 133,
+	      height: 173,
+	      x: cardX + gap,
+	      y: cardY + gap,
+	    })
 
-	        this.stage.addChild(bg, fish);
-	    }
+	    var duck = new Bitmap({
+	      x: cardX + gap,
+	      y: cardY + 38 + gap,
+	      image: resource.get('duck'),
+	      rect: [0, 0, 131, 79]
+	    })
+
+	    var whiteBgTiger = this.whiteBg = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: 133,
+	      height: 173,
+	      x: cardX + gap * 2,
+	      y: cardY + gap * 2,
+	    })
+
+	    var tiger = new Bitmap({
+	      x: cardX + 0 + gap * 2,
+	      y: cardY + 38 + gap * 2,
+	      image: resource.get('tiger'),
+	      rect: [0, 0, 133, 138]
+	    })
+
+	    var whiteBgMonkey = this.whiteBg = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: 133,
+	      height: 173,
+	      x: cardX + gap * 3,
+	      y: cardY + gap * 3,
+	    })
+
+	    var monkey = new Bitmap({
+	      x: cardX + 5 + gap * 3,
+	      y: cardY + 20 + gap * 3,
+	      image: resource.get('monkey'),
+	      rect: [0, 0, 121, 138]
+	    })
+
+	    var whiteBgRats = this.whiteBg = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: 133,
+	      height: 173,
+	      x: cardX + gap * 4,
+	      y: cardY + gap * 4,
+	    })
+
+	    var rats = new Bitmap({
+	      x: cardX + 10 + gap * 4,
+	      y: cardY + 40 + gap * 4,
+	      image: resource.get('rats'),
+	      rect: [0, 0, 106, 73]
+	    })
+
+	    var whiteBgCow = this.whiteBg = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: 133,
+	      height: 173,
+	      x: cardX + gap * 5,
+	      y: cardY + gap * 5,
+	    })
+
+	    var cow = new Bitmap({
+	      x: cardX + 5 + gap * 5,
+	      y: cardY + 40 + gap * 5,
+	      image: resource.get('cow'),
+	      rect: [0, 0, 117, 80]
+	    })
+
+	    this.stage.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird, whiteBgBird, brownBird, whiteBgDuck, duck, whiteBgTiger, tiger, whiteBgMonkey, monkey, whiteBgRats, rats, whiteBgCow, cow)
+	  },
+	  linkLink: function() {
+	    var bg = this.bg = new Bitmap({
+	      x: 0,
+	      y: 0,
+	      image: resource.get('indexBg'),
+	      rect: [0, 0, outerWidth, outerHeight]
+	    });
+
+	    var leftMenuContainer = this.leftMenuContainer = new Bitmap({
+	      x: 16,
+	      y: 150,
+	      image: resource.get('menuBar'),
+	      rect: [0, 0, 48, 255]
+	    })
+
+	    var clock = this.clock = new Bitmap({
+	      x: 27,
+	      y: 164,
+	      image: resource.get('clock'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var face = this.face = new Bitmap({
+	      x: 27,
+	      y: 200,
+	      image: resource.get('face'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var hand = this.hand = new Bitmap({
+	      x: 27,
+	      y: 240,
+	      image: resource.get('hand'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var correct = this.correct = new Bitmap({
+	      x: 27,
+	      y: 287,
+	      image: resource.get('correct'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var incorrect = this.incorrect = new Bitmap({
+	      x: 27,
+	      y: 325,
+	      image: resource.get('incorrect'),
+	      rect: [0, 0, 27, 27]
+	    })
+
+	    var link = this.link = new Bitmap({
+	      x: 17,
+	      y: 357,
+	      image: resource.get('leftArrow'),
+	      rect: [0, 0, 48, 48]
+	    })
+
+	    var bubble = this.bubble = new Bitmap({
+	      x: 740,
+	      y: 148,
+	      image: resource.get('bubble'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var star = this.star = new Bitmap({
+	      x: 740,
+	      y: 201,
+	      image: resource.get('star'),
+	      rect: [0, 0, 42, 42]
+	    })
+
+	    var bird = this.bird = new Bitmap({
+	      x: 720,
+	      y: 265,
+	      image: resource.get('bird'),
+	      rect: [0, 0, 75, 75]
+	    })
+
+	    var back = this.back = new Bitmap({
+	      x: 740,
+	      y: 357,
+	      image: resource.get('rightArrow'),
+	      rect: [0, 0, 42, 42]
+	})
+
+	    var whiteBgWidth = 150
+	    var whiteBgHeight = 85
+	    var whiteBgTop = 60
+	    var whiteBgLeft = 70
+	    var gap = 20
+
+	    var whiteBgDuck = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft,
+	      y: whiteBgTop,
+	    })
+	    var whiteBgMonkey = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft + whiteBgWidth + gap,
+	      y: whiteBgTop,
+	    })
+	    var whiteBgDuck2 = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2,
+	      y: whiteBgTop,
+	    })
+	    var whiteBgCow = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3,
+	      y: whiteBgTop,
+	    })
+	    var whiteBgBird = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft,
+	      y: whiteBgTop + whiteBgHeight + gap,
+	    })
+	    var whiteBgBird2 = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft + whiteBgWidth + gap,
+	      y: whiteBgTop + whiteBgHeight + gap,
+	    })
+	    var whiteBgRats = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2,
+	      y: whiteBgTop + whiteBgHeight + gap,
+	    })
+	    var whiteBgRats2 = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3,
+	      y: whiteBgTop + whiteBgHeight + gap,
+	    })
+	    var whiteBgCow2 = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft,
+	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
+	    })
+	    var whiteBgTiger = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft + whiteBgWidth + gap,
+	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
+	    })
+	    var whiteBgMonkey2 = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2,
+	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
+	    })
+
+	    var whiteBgTiger2 = new DOMElement({
+	      element: Hilo.createElement('div', {
+	        style: {
+	          background: '#fff',
+	          position: 'absolute',
+	          borderRadius: '20px',
+	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	        }
+	      }),
+	      width: whiteBgWidth,
+	      height: whiteBgHeight,
+	      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3,
+	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
+	    })
+
+	    this.stage.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird, whiteBgDuck, whiteBgMonkey, whiteBgDuck2, whiteBgCow, whiteBgBird, whiteBgBird2, whiteBgRats, whiteBgRats2, whiteBgCow2, whiteBgTiger, whiteBgTiger2, whiteBgMonkey2)
+	  }
 	};
 
 	module.exports = game;
 
+
 /***/ },
-/* 3 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -155,12 +964,12 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Hilo = __webpack_require__(4);
-	var Class = __webpack_require__(5);
-	var Container = __webpack_require__(6);
-	var CanvasRenderer = __webpack_require__(10);
-	var DOMRenderer = __webpack_require__(12);
-	var WebGLRenderer = __webpack_require__(14);
+	var Hilo = __webpack_require__(3);
+	var Class = __webpack_require__(4);
+	var Container = __webpack_require__(5);
+	var CanvasRenderer = __webpack_require__(9);
+	var DOMRenderer = __webpack_require__(11);
+	var WebGLRenderer = __webpack_require__(13);
 
 	/**
 	 * Hilo
@@ -413,7 +1222,7 @@
 	module.exports = Stage;
 
 /***/ },
-/* 4 */
+/* 3 */
 /***/ function(module, exports) {
 
 	/**
@@ -772,7 +1581,7 @@
 	module.exports = Hilo;
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports) {
 
 	/**
@@ -954,7 +1763,7 @@
 	module.exports = Class;
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -962,9 +1771,9 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Hilo = __webpack_require__(4);
-	var Class = __webpack_require__(5);
-	var View = __webpack_require__(7);
+	var Hilo = __webpack_require__(3);
+	var Class = __webpack_require__(4);
+	var View = __webpack_require__(6);
 
 	/**
 	 * Hilo
@@ -1315,7 +2124,7 @@
 	module.exports = Container;
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1323,10 +2132,10 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Hilo = __webpack_require__(4);
-	var Class = __webpack_require__(5);
-	var EventMixin = __webpack_require__(8);
-	var Matrix = __webpack_require__(9);
+	var Hilo = __webpack_require__(3);
+	var Class = __webpack_require__(4);
+	var EventMixin = __webpack_require__(7);
+	var Matrix = __webpack_require__(8);
 
 	/**
 	 * Hilo
@@ -1724,7 +2533,7 @@
 	module.exports = View;
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1732,7 +2541,7 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Class = __webpack_require__(5);
+	var Class = __webpack_require__(4);
 
 	/**
 	 * Hilo
@@ -1874,7 +2683,7 @@
 	module.exports = EventMixin;
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1882,7 +2691,7 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Class = __webpack_require__(5);
+	var Class = __webpack_require__(4);
 
 	/**
 	 * Hilo
@@ -2046,7 +2855,7 @@
 	module.exports = Matrix;
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2054,9 +2863,9 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Class = __webpack_require__(5);
-	var Hilo = __webpack_require__(4);
-	var Renderer = __webpack_require__(11);
+	var Class = __webpack_require__(4);
+	var Hilo = __webpack_require__(3);
+	var Renderer = __webpack_require__(10);
 
 	/**
 	 * Hilo
@@ -2280,7 +3089,7 @@
 	module.exports = CanvasRenderer;
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2288,8 +3097,8 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Hilo = __webpack_require__(4);
-	var Class = __webpack_require__(5);
+	var Hilo = __webpack_require__(3);
+	var Class = __webpack_require__(4);
 
 	/**
 	 * Hilo
@@ -2372,7 +3181,7 @@
 	module.exports = Renderer;
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2380,10 +3189,10 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Class = __webpack_require__(5);
-	var Hilo = __webpack_require__(4);
-	var Renderer = __webpack_require__(11);
-	var Drawable = __webpack_require__(13);
+	var Class = __webpack_require__(4);
+	var Hilo = __webpack_require__(3);
+	var Renderer = __webpack_require__(10);
+	var Drawable = __webpack_require__(12);
 
 	/**
 	 * Hilo
@@ -2562,7 +3371,7 @@
 	module.exports = DOMRenderer;
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2570,8 +3379,8 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Hilo = __webpack_require__(4);
-	var Class = __webpack_require__(5);
+	var Hilo = __webpack_require__(3);
+	var Class = __webpack_require__(4);
 
 	/**
 	 * Hilo
@@ -2645,7 +3454,7 @@
 	module.exports = Drawable;
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2653,9 +3462,9 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Class = __webpack_require__(5);
-	var Renderer = __webpack_require__(11);
-	var Matrix = __webpack_require__(9);
+	var Class = __webpack_require__(4);
+	var Renderer = __webpack_require__(10);
+	var Matrix = __webpack_require__(8);
 
 	/**
 	 * Hilo
@@ -3195,7 +4004,7 @@
 	module.exports = WebGLRenderer;
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3203,8 +4012,8 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Class = __webpack_require__(5);
-	var Hilo = __webpack_require__(4);
+	var Class = __webpack_require__(4);
+	var Hilo = __webpack_require__(3);
 
 	/**
 	 * Hilo
@@ -3348,7 +4157,7 @@
 	module.exports = Ticker;
 
 /***/ },
-/* 16 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3356,10 +4165,10 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Hilo = __webpack_require__(4);
-	var Class = __webpack_require__(5);
-	var View = __webpack_require__(7);
-	var Drawable = __webpack_require__(13);
+	var Hilo = __webpack_require__(3);
+	var Class = __webpack_require__(4);
+	var View = __webpack_require__(6);
+	var Drawable = __webpack_require__(12);
 
 	/**
 	 * Hilo
@@ -3424,11 +4233,11 @@
 	module.exports = Bitmap;
 
 /***/ },
-/* 17 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var EventMixin = __webpack_require__(8);
-	var Class = __webpack_require__(5);
+	var EventMixin = __webpack_require__(7);
+	var Class = __webpack_require__(4);
 
 	/**
 	 * @module weteach-trial-lesson/mediator
@@ -3440,11 +4249,11 @@
 	module.exports = mediator;
 
 /***/ },
-/* 18 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var LoadQueue = __webpack_require__(19);
-	var mediator = __webpack_require__(17);
+	var LoadQueue = __webpack_require__(18);
+	var mediator = __webpack_require__(16);
 
 	/**
 	 * @module weteach-trial-lesson/resource
@@ -3452,44 +4261,74 @@
 	 * @requires weteach-trial-lesson/mediator
 	 */
 	var resource = {
-	    loadedRes:{},
-	    res:[
-	        {id:'fish', src:'src/images/fish.png'},
-	        {id:'bg', src:'src/images/bg.png'}
-	    ],
-	    load:function(){
-	        var res = this.res;
-	        var loadedRes = this.loadedRes;
+	  loadedRes: {},
+	  res: [
+	    { id: 'fish', src: 'src/images/fish.png' },
+	    { id: 'bg', src: 'src/images/bg.png' },
+	    { id: 'atTheZoo', src: 'src/images/at-the-zoo.jpeg' },
+	    { id: 'autumnFall', src: 'src/images/autumn-fall.jpeg' },
+	    { id: 'early', src: 'src/images/early-production.jpg' },
+	    { id: 'favourite', src: 'src/images/favourite-toy-shop.jpg' },
+	    { id: 'indexBg', src: 'src/images/index-bg.jpeg' },
+	    { id: 'pre', src: 'src/images/pre-production.jpg' },
+	    { id: 'speech', src: 'src/images/speech.jpg' },
+	    { id: 'menuBar', src: 'src/images/menu-bar.png' },
+	    { id: 'face', src: 'src/images/face.png' },
+	    { id: 'hand', src: 'src/images/hand.png' },
+	    { id: 'correct', src: 'src/images/correct.png' },
+	    { id: 'incorrect', src: 'src/images/incorrect.png' },
+	    { id: 'clock', src: 'src/images/clock.png' },
+	    { id: 'two', src: 'src/images/two.png' },
+	    { id: 'one', src: 'src/images/one.png' },
+	    { id: 'bubble', src: 'src/images/bubble.png' },
+	    { id: 'link', src: 'src/images/link.png' },
+	    { id: 'back', src: 'src/images/back.png' },
+	    { id: 'star', src: 'src/images/star.png' },
+	    { id: 'boomFlower', src: 'src/images/boom-flower.png' },
+	    { id: 'bird', src: 'src/images/bird.gif' },
+	    { id: 'rats', src: 'src/images/rats.jpg' },
+	    { id: 'tiger', src: 'src/images/tiger.jpg' },
+	    { id: 'monkey', src: 'src/images/monkey.jpg' },
+	    { id: 'duck', src: 'src/images/duck.jpg' },
+	    { id: 'brownBird', src: 'src/images/brown-bird.jpg' },
+	    { id: 'cow', src: 'src/images/cow.jpg' },
+	    { id: 'leftArrow', src: 'src/images/left-arrow.png' },
+	    { id: 'rightArrow', src: 'src/images/right-arrow.png' },
+	  ],
+	  load: function() {
+	    var res = this.res;
+	    var loadedRes = this.loadedRes;
 
-	        var queue = this.queue = new LoadQueue;
-	        queue.add(res);
+	    var queue = this.queue = new LoadQueue;
+	    queue.add(res);
 
-	        queue.on("complete", function(){
-	            var imgs = [];
-	            for(var i = 0;i < res.length;i ++){
-	                var id = res[i].id;
-	                loadedRes[id] = queue.getContent(id);
-	            }
-	            mediator.fire("resource:complete");
-	        });
+	    queue.on("complete", function() {
+	      var imgs = [];
+	      for (var i = 0; i < res.length; i++) {
+	        var id = res[i].id;
+	        loadedRes[id] = queue.getContent(id);
+	      }
+	      mediator.fire("resource:complete");
+	    });
 
-	        queue.on("load", function(d){
-	            mediator.fire("resource:loaded", {
-	                num:queue._loaded/(queue._source.length + 1)
-	            });
-	        });
+	    queue.on("load", function(d) {
+	      mediator.fire("resource:loaded", {
+	        num: queue._loaded / (queue._source.length + 1)
+	      });
+	    });
 
-	        queue.start();
-	    },
-	    get:function(id){
-	        return this.loadedRes[id];
-	    }
+	    queue.start();
+	  },
+	  get: function(id) {
+	    return this.loadedRes[id];
+	  }
 	};
 
 	module.exports = resource;
 
+
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3497,10 +4336,10 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Class = __webpack_require__(5);
-	var EventMixin = __webpack_require__(8);
-	var ImageLoader = __webpack_require__(20);
-	var ScriptLoader = __webpack_require__(21);
+	var Class = __webpack_require__(4);
+	var EventMixin = __webpack_require__(7);
+	var ImageLoader = __webpack_require__(19);
+	var ScriptLoader = __webpack_require__(20);
 
 	/**
 	 * Hilo
@@ -3730,7 +4569,7 @@
 	module.exports = LoadQueue;
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3738,7 +4577,7 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Class = __webpack_require__(5);
+	var Class = __webpack_require__(4);
 
 	/**
 	 * Hilo
@@ -3787,7 +4626,7 @@
 	module.exports = ImageLoader;
 
 /***/ },
-/* 21 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3795,7 +4634,7 @@
 	 * Copyright 2015 alibaba.com
 	 * Licensed under the MIT License
 	 */
-	var Class = __webpack_require__(5);
+	var Class = __webpack_require__(4);
 
 	/**
 	 * Hilo
@@ -3859,7 +4698,7 @@
 	module.exports = ScriptLoader;
 
 /***/ },
-/* 22 */
+/* 21 */
 /***/ function(module, exports) {
 
 	/**
@@ -3867,11 +4706,11 @@
 	*/
 	var loading = {
 	    elem:document.getElementById('loading'),
-	    start:function(){
+	    start: function() {
 	        this.elem.style.display = "block";
 	        this.loaded(0);
 	    },
-	    loaded:function(num){
+	    loaded:function(num) {
 	        this.elem.innerHTML = 'loading... ' + (num * 100).toFixed(2) + '%';
 	    },
 	    end:function(){
@@ -3883,378 +4722,585 @@
 	module.exports = loading;
 
 /***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Hilo 1.0.0 for commonjs
+	 * Copyright 2015 alibaba.com
+	 * Licensed under the MIT License
+	 */
+	var Class = __webpack_require__(4);
+	var Hilo = __webpack_require__(3);
+	var View = __webpack_require__(6);
+	var CacheMixin = __webpack_require__(23);
+
+	/**
+	 * Hilo
+	 * Copyright 2015 alibaba.com
+	 * Licensed under the MIT License
+	 */
+
+	/**
+	 * @class Text类提供简单的文字显示功能。复杂的文本功能可以使用DOMElement。
+	 * @augments View
+	 * @param {Object} properties 创建对象的属性参数。可包含此类所有可写属性。
+	 * @module hilo/view/Text
+	 * @requires hilo/core/Class
+	 * @requires hilo/core/Hilo
+	 * @requires hilo/view/View
+	 * @requires hilo/view/CacheMixin
+	 * @property {String} text 指定要显示的文本内容。
+	 * @property {String} color 指定使用的字体颜色。
+	 * @property {String} textAlign 指定文本的对齐方式。可以是以下任意一个值：'start', 'end', 'left', 'right', and 'center'。
+	 * @property {String} textVAlign 指定文本的垂直对齐方式。可以是以下任意一个值：'top', 'middle', 'bottom'。
+	 * @property {Boolean} outline 指定文本是绘制边框还是填充。
+	 * @property {Number} lineSpacing 指定文本的行距。单位为像素。默认值为0。
+	 * @property {Number} maxWidth 指定文本的最大宽度。默认值为200。
+	 * @property {String} font 文本的字体CSS样式。只读属性。设置字体样式请用setFont方法。
+	 * @property {Number} textWidth 指示文本内容的宽度，只读属性。仅在canvas模式下有效。
+	 * @property {Number} textHeight 指示文本内容的高度，只读属性。仅在canvas模式下有效。
+	 */
+	var Text = Class.create(/** @lends Text.prototype */{
+	    Extends: View,
+	    Mixes:CacheMixin,
+	    constructor: function(properties){
+	        properties = properties || {};
+	        this.id = this.id || properties.id || Hilo.getUid('Text');
+	        Text.superclass.constructor.call(this, properties);
+
+	        // if(!properties.width) this.width = 200; //default width
+	        if(!properties.font) this.font = '12px arial'; //default font style
+	        this._fontHeight = Text.measureFontHeight(this.font);
+	    },
+
+	    text: null,
+	    color: '#000',
+	    textAlign: null,
+	    textVAlign: null,
+	    outline: false,
+	    lineSpacing: 0,
+	    maxWidth: 200,
+	    font: null, //ready-only
+	    textWidth: 0, //read-only
+	    textHeight: 0, //read-only
+
+	    /**
+	     * 设置文本的字体CSS样式。
+	     * @param {String} font 要设置的字体CSS样式。
+	     * @returns {Text} Text对象本身。链式调用支持。
+	     */
+	    setFont: function(font){
+	        var me = this;
+	        if(me.font !== font){
+	            me.font = font;
+	            me._fontHeight = Text.measureFontHeight(font);
+	        }
+
+	        return me;
+	    },
+
+	    /**
+	     * 覆盖渲染方法。
+	     * @private
+	     */
+	    render: function(renderer, delta){
+	        var me = this, canvas = renderer.canvas;
+
+	        if(renderer.renderType === 'canvas'){
+	            me._draw(renderer.context);
+	        }
+	        else if(renderer.renderType === 'dom'){
+	            var drawable = me.drawable;
+	            var domElement = drawable.domElement;
+	            var style = domElement.style;
+
+	            style.font = me.font;
+	            style.textAlign = me.textAlign;
+	            style.color = me.color;
+	            style.width = me.width + 'px';
+	            style.height = me.height + 'px';
+	            style.lineHeight = (me._fontHeight + me.lineSpacing) + 'px';
+
+	            domElement.innerHTML = me.text;
+	            renderer.draw(this);
+	        }
+	        else{
+	            //TODO:自动更新cache
+	            me.cache();
+	            renderer.draw(me);
+	        }
+	    },
+
+	    /**
+	     * 在指定的渲染上下文上绘制文本。
+	     * @private
+	     */
+	    _draw: function(context){
+	        var me = this, text = me.text.toString();
+	        if(!text) return;
+
+	        //set drawing style
+	        context.font = me.font;
+	        context.textAlign = me.textAlign;
+	        context.textBaseline = 'top';
+
+	        //find and draw all explicit lines
+	        var lines = text.split(/\r\n|\r|\n|<br(?:[ \/])*>/);
+	        var width = 0, height = 0;
+	        var lineHeight = me._fontHeight + me.lineSpacing;
+	        var i, line, w;
+	        var drawLines = [];
+
+	        for(i = 0, len = lines.length; i < len; i++){
+	            line = lines[i];
+	            w = context.measureText(line).width;
+
+	            //check if the line need to split
+	            if(w <= me.maxWidth){
+	                drawLines.push({text:line, y:height});
+	                // me._drawTextLine(context, line, height);
+	                if(width < w) width = w;
+	                height += lineHeight;
+	                continue;
+	            }
+
+	            var str = '', oldWidth = 0, newWidth, j, word;
+
+	            for(j = 0, wlen = line.length; j < wlen; j++){
+	                word = line[j];
+	                newWidth = context.measureText(str + word).width;
+
+	                if(newWidth > me.maxWidth){
+	                    drawLines.push({text:str, y:height});
+	                    // me._drawTextLine(context, str, height);
+	                    if(width < oldWidth) width = oldWidth;
+	                    height += lineHeight;
+	                    str = word;
+	                }else{
+	                    oldWidth = newWidth;
+	                    str += word;
+	                }
+
+	                if(j == wlen - 1){
+	                    drawLines.push({text:str, y:height});
+	                    // me._drawTextLine(context, str, height);
+	                    if(str !== word && width < newWidth) width = newWidth;
+	                    height += lineHeight;
+	                }
+	            }
+	        }
+
+	        me.textWidth = width;
+	        me.textHeight = height;
+	        if(!me.width) me.width = width;
+	        if(!me.height) me.height = height;
+
+	        //vertical alignment
+	        var startY = 0;
+	        switch(me.textVAlign){
+	            case 'middle':
+	                startY = me.height - me.textHeight >> 1;
+	                break;
+	            case 'bottom':
+	                startY = me.height - me.textHeight;
+	                break;
+	        }
+
+	        //draw background
+	        var bg = me.background;
+	        if(bg){
+	            context.fillStyle = bg;
+	            context.fillRect(0, 0, me.width, me.height);
+	        }
+
+	        if(me.outline) context.strokeStyle = me.color;
+	        else context.fillStyle = me.color;
+
+	        //draw text lines
+	        for(var i = 0; i < drawLines.length; i++){
+	            var line = drawLines[i];
+	            me._drawTextLine(context, line.text, startY + line.y);
+	        }
+	    },
+
+	    /**
+	     * 在指定的渲染上下文上绘制一行文本。
+	     * @private
+	     */
+	    _drawTextLine: function(context, text, y){
+	        var me = this, x = 0, width = me.width;
+
+	        switch(me.textAlign){
+	            case 'center':
+	                x = width >> 1;
+	                break;
+	            case 'right':
+	            case 'end':
+	                x = width;
+	                break;
+	        };
+
+	        if(me.outline) context.strokeText(text, x, y);
+	        else context.fillText(text, x, y);
+	    },
+
+	    Statics: /** @lends Text */{
+	        /**
+	         * 测算指定字体样式的行高。
+	         * @param {String} font 指定要测算的字体样式。
+	         * @return {Number} 返回指定字体的行高。
+	         */
+	        measureFontHeight: function(font){
+	            var docElement = document.documentElement, fontHeight;
+	            var elem = Hilo.createElement('div', {style:{font:font, position:'absolute'}, innerHTML:'M'});
+
+	            docElement.appendChild(elem);
+	            fontHeight = elem.offsetHeight;
+	            docElement.removeChild(elem);
+	            return fontHeight;
+	        }
+	    }
+
+	});
+
+	module.exports = Text;
+
+/***/ },
 /* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(__dirname) {var path = __webpack_require__(24);
-	module.exports = {
-	    entry: "./src/js/entry.js",
-	    output: {
-	        path: __dirname,
-	        filename: "build/bundle.js"
-	    },
-	    resolve: {
+	/**
+	 * Hilo 1.0.0 for commonjs
+	 * Copyright 2015 alibaba.com
+	 * Licensed under the MIT License
+	 */
+	var Hilo = __webpack_require__(3);
+	var Class = __webpack_require__(4);
+	var Drawable = __webpack_require__(12);
 
+	/**
+	 * Hilo
+	 * Copyright 2015 alibaba.com
+	 * Licensed under the MIT License
+	 */
+
+	var _cacheCanvas = Hilo.createElement('canvas');
+	var _cacheContext = _cacheCanvas.getContext('2d');
+	/**
+	 * @class CacheMixin是一个包含cache功能的mixin。可以通过 Class.mix(target, CacheMixin) 来为target增加cache功能。
+	 * @mixin
+	 * @static
+	 * @module hilo/view/CacheMixin
+	 * @requires hilo/core/Hilo
+	 * @requires hilo/core/Class
+	 * @requires hilo/view/Drawable
+	 */
+	var CacheMixin = {
+	    _cacheDirty:true,
+	    /**
+	     * 缓存到图片里。可用来提高渲染效率。
+	     * @param {Boolean} forceUpdate 是否强制更新缓存
+	     */
+	    cache: function(forceUpdate){
+	        if(forceUpdate || this._cacheDirty || !this._cacheImage){
+	            this.updateCache();
+	        }
+	    },
+	    /**
+	     * 更新缓存
+	     */
+	    updateCache:function(){
+	        //TODO:width, height自动判断
+	        _cacheCanvas.width = this.width;
+	        _cacheCanvas.height = this.height;
+	        this._draw(_cacheContext);
+	        this._cacheImage = new Image();
+	        this._cacheImage.src = _cacheCanvas.toDataURL();
+	        this.drawable = this.drawable||new Drawable();
+	        this.drawable.init(this._cacheImage);
+	        this._cacheDirty = false;
+	    },
+	    /**
+	     * 设置缓存是否dirty
+	     */
+	    setCacheDirty:function(dirty){
+	        this._cacheDirty = dirty;
 	    }
 	};
 
-	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
+	module.exports = CacheMixin;
 
 /***/ },
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+	/**
+	 * Hilo 1.0.0 for commonjs
+	 * Copyright 2015 alibaba.com
+	 * Licensed under the MIT License
+	 */
+	var Class = __webpack_require__(4);
+	var Hilo = __webpack_require__(3);
+	var Container = __webpack_require__(5);
+	var Bitmap = __webpack_require__(15);
 
-	// resolves . and .. elements in a path array with directory names there
-	// must be no slashes, empty elements, or device names (c:\) in the array
-	// (so also no leading and trailing slashes - it does not distinguish
-	// relative and absolute paths)
-	function normalizeArray(parts, allowAboveRoot) {
-	  // if the path tries to go above the root, `up` ends up > 0
-	  var up = 0;
-	  for (var i = parts.length - 1; i >= 0; i--) {
-	    var last = parts[i];
-	    if (last === '.') {
-	      parts.splice(i, 1);
-	    } else if (last === '..') {
-	      parts.splice(i, 1);
-	      up++;
-	    } else if (up) {
-	      parts.splice(i, 1);
-	      up--;
+	/**
+	 * Hilo
+	 * Copyright 2015 alibaba.com
+	 * Licensed under the MIT License
+	 */
+
+	/**
+	 * @class BitmapText类提供使用位图文本的功能。当前仅支持单行文本。
+	 * @augments Container
+	 * @param {Object} properties 创建对象的属性参数。可包含此类所有可写属性。
+	 * @module hilo/view/BitmapText
+	 * @requires hilo/core/Class
+	 * @requires hilo/core/Hilo
+	 * @requires hilo/view/Container
+	 * @requires hilo/view/Bitmap
+	 * @property {Object} glyphs 位图字体的字形集合。格式为：{letter:{image:img, rect:[0,0,100,100]}}。
+	 * @property {Number} letterSpacing 字距，即字符间的间隔。默认值为0。
+	 * @property {String} text 位图文本的文本内容。只读属性。设置文本请使用setFont方法。
+	 * @property {String} textAlign 文本对齐方式，值为left、center、right, 默认left。只读属性。设置文本请使用setTextAlign方法。
+	 */
+	var BitmapText = Class.create(/** @lends BitmapText.prototype */{
+	    Extends: Container,
+	    constructor: function(properties){
+	        properties = properties || {};
+	        this.id = this.id || properties.id || Hilo.getUid('BitmapText');
+	        BitmapText.superclass.constructor.call(this, properties);
+
+	        var text = properties.text + '';
+	        if(text){
+	            this.text = '';
+	            this.setText(text);
+	        }
+
+	        this.pointerChildren = false; //disable user events for single letters
+	    },
+
+	    glyphs: null,
+	    letterSpacing: 0,
+	    text: '',
+	    textAlign:'left',
+
+	    /**
+	     * 设置位图文本的文本内容。
+	     * @param {String} text 要设置的文本内容。
+	     * @returns {BitmapText} BitmapText对象本身。链式调用支持。
+	     */
+	    setText: function(text){
+	        var me = this, str = text.toString(), len = str.length;
+	        if(me.text == str) return;
+	        me.text = str;
+
+	        var i, charStr, charGlyph, charObj, width = 0, height = 0, left = 0;
+	        for(i = 0; i < len; i++){
+	            charStr = str.charAt(i);
+	            charGlyph = me.glyphs[charStr];
+	            if(charGlyph){
+	                left = width + (width > 0 ? me.letterSpacing : 0);
+	                if(me.children[i]){
+	                    charObj = me.children[i];
+	                    charObj.setImage(charGlyph.image, charGlyph.rect);
+	                }
+	                else{
+	                    charObj = me._createBitmap(charGlyph);
+	                    me.addChild(charObj);
+	                }
+	                charObj.x = left;
+	                width = left + charGlyph.rect[2];
+	                height = Math.max(height, charGlyph.rect[3]);
+	            }
+	        }
+
+	        for(i = me.children.length - 1;i >= len;i --){
+	            me._releaseBitmap(me.children[i]);
+	            me.children[i].removeFromParent();
+	        }
+
+	        me.width = width;
+	        me.height = height;
+	        this.setTextAlign();
+	        return me;
+	    },
+	    _createBitmap:function(cfg){
+	        var bmp;
+	        if(BitmapText._pool.length){
+	            bmp = BitmapText._pool.pop();
+	            bmp.setImage(cfg.image, cfg.rect);
+	        }
+	        else{
+	            bmp = new Bitmap({
+	                image:cfg.image,
+	                rect:cfg.rect
+	            });
+	        }
+	        return bmp;
+	    },
+	    _releaseBitmap:function(bmp){
+	        BitmapText._pool.push(bmp);
+	    },
+
+	     /**
+	     * 设置位图文本的对齐方式。
+	     * @param textAlign 文本对齐方式，值为left、center、right
+	     * @returns {BitmapText} BitmapText对象本身。链式调用支持。
+	     */
+	    setTextAlign:function(textAlign){
+	        this.textAlign = textAlign||this.textAlign;
+	        switch(this.textAlign){
+	            case "center":
+	                this.pivotX = this.width * .5;
+	                break;
+	            case "right":
+	                this.pivotX = this.width;
+	                break;
+	            case "left":
+	            default:
+	                this.pivotX = 0;
+	                break;
+	        }
+	        return this;
+	    },
+
+	    /**
+	     * 返回能否使用当前指定的字体显示提供的字符串。
+	     * @param {String} str 要检测的字符串。
+	     * @returns {Boolean} 是否能使用指定字体。
+	     */
+	    hasGlyphs: function(str){
+	        var glyphs = this.glyphs;
+	        if(!glyphs) return false;
+
+	        var str = str.toString(), len = str.length, i;
+	        for(i = 0; i < len; i++){
+	            if(!glyphs[str.charAt(i)]) return false;
+	        }
+	        return true;
+	    },
+
+	    Statics:/** @lends BitmapText */{
+	        _pool:[],
+	        /**
+	         * 简易方式生成字形集合。
+	         * @static
+	         * @param {String} text 字符文本。
+	         * @param {Image} image 字符图片。
+	         * @param {Number} col 列数  默认和文本字数一样
+	         * @param {Number} row 行数 默认1行
+	         * @returns {BitmapText} BitmapText对象本身。链式调用支持。
+	         */
+	        createGlyphs:function(text, image, col, row){
+	            var str = text.toString();
+	            col = col||str.length;
+	            row = row||1;
+	            var w = image.width/col;
+	            var h = image.height/row;
+	            var glyphs = {};
+	            for(var i = 0, l = text.length;i < l;i ++){
+	                charStr = str.charAt(i);
+	                glyphs[charStr] = {
+	                    image:image,
+	                    rect:[w * (i % col), h * Math.floor(i / col), w, h]
+	                }
+	            }
+	            return glyphs;
+	        }
 	    }
-	  }
 
-	  // if the path is allowed to go above the root, restore leading ..s
-	  if (allowAboveRoot) {
-	    for (; up--; up) {
-	      parts.unshift('..');
-	    }
-	  }
+	});
 
-	  return parts;
-	}
-
-	// Split a filename into [root, dir, basename, ext], unix version
-	// 'root' is just a slash, or nothing.
-	var splitPathRe =
-	    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-	var splitPath = function(filename) {
-	  return splitPathRe.exec(filename).slice(1);
-	};
-
-	// path.resolve([from ...], to)
-	// posix version
-	exports.resolve = function() {
-	  var resolvedPath = '',
-	      resolvedAbsolute = false;
-
-	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-	    var path = (i >= 0) ? arguments[i] : process.cwd();
-
-	    // Skip empty and invalid entries
-	    if (typeof path !== 'string') {
-	      throw new TypeError('Arguments to path.resolve must be strings');
-	    } else if (!path) {
-	      continue;
-	    }
-
-	    resolvedPath = path + '/' + resolvedPath;
-	    resolvedAbsolute = path.charAt(0) === '/';
-	  }
-
-	  // At this point the path should be resolved to a full absolute path, but
-	  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-	  // Normalize the path
-	  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
-	    return !!p;
-	  }), !resolvedAbsolute).join('/');
-
-	  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
-	};
-
-	// path.normalize(path)
-	// posix version
-	exports.normalize = function(path) {
-	  var isAbsolute = exports.isAbsolute(path),
-	      trailingSlash = substr(path, -1) === '/';
-
-	  // Normalize the path
-	  path = normalizeArray(filter(path.split('/'), function(p) {
-	    return !!p;
-	  }), !isAbsolute).join('/');
-
-	  if (!path && !isAbsolute) {
-	    path = '.';
-	  }
-	  if (path && trailingSlash) {
-	    path += '/';
-	  }
-
-	  return (isAbsolute ? '/' : '') + path;
-	};
-
-	// posix version
-	exports.isAbsolute = function(path) {
-	  return path.charAt(0) === '/';
-	};
-
-	// posix version
-	exports.join = function() {
-	  var paths = Array.prototype.slice.call(arguments, 0);
-	  return exports.normalize(filter(paths, function(p, index) {
-	    if (typeof p !== 'string') {
-	      throw new TypeError('Arguments to path.join must be strings');
-	    }
-	    return p;
-	  }).join('/'));
-	};
-
-
-	// path.relative(from, to)
-	// posix version
-	exports.relative = function(from, to) {
-	  from = exports.resolve(from).substr(1);
-	  to = exports.resolve(to).substr(1);
-
-	  function trim(arr) {
-	    var start = 0;
-	    for (; start < arr.length; start++) {
-	      if (arr[start] !== '') break;
-	    }
-
-	    var end = arr.length - 1;
-	    for (; end >= 0; end--) {
-	      if (arr[end] !== '') break;
-	    }
-
-	    if (start > end) return [];
-	    return arr.slice(start, end - start + 1);
-	  }
-
-	  var fromParts = trim(from.split('/'));
-	  var toParts = trim(to.split('/'));
-
-	  var length = Math.min(fromParts.length, toParts.length);
-	  var samePartsLength = length;
-	  for (var i = 0; i < length; i++) {
-	    if (fromParts[i] !== toParts[i]) {
-	      samePartsLength = i;
-	      break;
-	    }
-	  }
-
-	  var outputParts = [];
-	  for (var i = samePartsLength; i < fromParts.length; i++) {
-	    outputParts.push('..');
-	  }
-
-	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-	  return outputParts.join('/');
-	};
-
-	exports.sep = '/';
-	exports.delimiter = ':';
-
-	exports.dirname = function(path) {
-	  var result = splitPath(path),
-	      root = result[0],
-	      dir = result[1];
-
-	  if (!root && !dir) {
-	    // No dirname whatsoever
-	    return '.';
-	  }
-
-	  if (dir) {
-	    // It has a dirname, strip trailing slash
-	    dir = dir.substr(0, dir.length - 1);
-	  }
-
-	  return root + dir;
-	};
-
-
-	exports.basename = function(path, ext) {
-	  var f = splitPath(path)[2];
-	  // TODO: make this comparison case-insensitive on windows?
-	  if (ext && f.substr(-1 * ext.length) === ext) {
-	    f = f.substr(0, f.length - ext.length);
-	  }
-	  return f;
-	};
-
-
-	exports.extname = function(path) {
-	  return splitPath(path)[3];
-	};
-
-	function filter (xs, f) {
-	    if (xs.filter) return xs.filter(f);
-	    var res = [];
-	    for (var i = 0; i < xs.length; i++) {
-	        if (f(xs[i], i, xs)) res.push(xs[i]);
-	    }
-	    return res;
-	}
-
-	// String.prototype.substr - negative index don't work in IE8
-	var substr = 'ab'.substr(-1) === 'b'
-	    ? function (str, start, len) { return str.substr(start, len) }
-	    : function (str, start, len) {
-	        if (start < 0) start = str.length + start;
-	        return str.substr(start, len);
-	    }
-	;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(25)))
+	module.exports = BitmapText;
 
 /***/ },
 /* 25 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	// shim for using process in browser
+	/**
+	 * Hilo 1.0.0 for commonjs
+	 * Copyright 2015 alibaba.com
+	 * Licensed under the MIT License
+	 */
+	var Hilo = __webpack_require__(3);
+	var Class = __webpack_require__(4);
+	var View = __webpack_require__(6);
+	var Drawable = __webpack_require__(12);
 
-	var process = module.exports = {};
+	/**
+	 * Hilo
+	 * Copyright 2015 alibaba.com
+	 * Licensed under the MIT License
+	 */
 
-	// cached from whatever global is present so that test runners that stub it
-	// don't break things.  But we need to wrap it in a try catch in case it is
-	// wrapped in strict mode code which doesn't define any globals.  It's inside a
-	// function because try/catches deoptimize in certain engines.
+	/**
+	 * @name DOMElement
+	 * @class DOMElement是dom元素的包装。
+	 * @augments View
+	 * @param {Object} properties 创建对象的属性参数。可包含此类所有可写属性。特殊属性有：
+	 * <ul>
+	 * <li><b>element</b> - 要包装的dom元素。必需。</li>
+	 * </ul>
+	 * @module hilo/view/DOMElement
+	 * @requires hilo/core/Hilo
+	 * @requires hilo/core/Class
+	 * @requires hilo/view/View
+	 * @requires hilo/view/Drawable
+	 */
+	var DOMElement = Class.create(/** @lends DOMElement.prototype */{
+	    Extends: View,
+	    constructor: function(properties){
+	        properties = properties || {};
+	        this.id = this.id || properties.id || Hilo.getUid("DOMElement");
+	        DOMElement.superclass.constructor.call(this, properties);
 
-	var cachedSetTimeout;
-	var cachedClearTimeout;
+	        this.drawable = new Drawable();
+	        var elem = this.drawable.domElement = properties.element || Hilo.createElement('div');
+	        elem.id = this.id;
+	    },
 
-	(function () {
-	  try {
-	    cachedSetTimeout = setTimeout;
-	  } catch (e) {
-	    cachedSetTimeout = function () {
-	      throw new Error('setTimeout is not defined');
-	    }
-	  }
-	  try {
-	    cachedClearTimeout = clearTimeout;
-	  } catch (e) {
-	    cachedClearTimeout = function () {
-	      throw new Error('clearTimeout is not defined');
-	    }
-	  }
-	} ())
-	var queue = [];
-	var draining = false;
-	var currentQueue;
-	var queueIndex = -1;
-
-	function cleanUpNextTick() {
-	    if (!draining || !currentQueue) {
-	        return;
-	    }
-	    draining = false;
-	    if (currentQueue.length) {
-	        queue = currentQueue.concat(queue);
-	    } else {
-	        queueIndex = -1;
-	    }
-	    if (queue.length) {
-	        drainQueue();
-	    }
-	}
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    var timeout = cachedSetTimeout(cleanUpNextTick);
-	    draining = true;
-
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        while (++queueIndex < len) {
-	            if (currentQueue) {
-	                currentQueue[queueIndex].run();
+	    /**
+	     * 覆盖渲染方法。
+	     * @private
+	     */
+	    _render: function(renderer, delta){
+	        if(!this.onUpdate || this.onUpdate(delta) !== false){
+	            renderer.transform(this);
+	            if(this.visible && this.alpha > 0){
+	                this.render(renderer, delta);
 	            }
 	        }
-	        queueIndex = -1;
-	        len = queue.length;
-	    }
-	    currentQueue = null;
-	    draining = false;
-	    cachedClearTimeout(timeout);
-	}
+	    },
 
-	process.nextTick = function (fun) {
-	    var args = new Array(arguments.length - 1);
-	    if (arguments.length > 1) {
-	        for (var i = 1; i < arguments.length; i++) {
-	            args[i - 1] = arguments[i];
+	    /**
+	     * 覆盖渲染方法。
+	     * @private
+	     */
+	    render: function(renderer, delta){
+	        var canvas = renderer.canvas;
+	        if(canvas.getContext){
+	            var elem = this.drawable.domElement, depth = this.depth,
+	                nextElement = canvas.nextSibling, nextDepth;
+	            if(elem.parentNode) return;
+
+	            //draw dom element just after stage canvas
+	            while(nextElement && nextElement.nodeType != 3){
+	                nextDepth = parseInt(nextElement.style.zIndex) || 0;
+	                if(nextDepth <= 0 || nextDepth > depth){
+	                    break;
+	                }
+	                nextElement = nextElement.nextSibling;
+	            }
+	            canvas.parentNode.insertBefore(this.drawable.domElement, nextElement);
+	        }else{
+	            renderer.draw(this);
 	        }
 	    }
-	    queue.push(new Item(fun, args));
-	    if (queue.length === 1 && !draining) {
-	        cachedSetTimeout(drainQueue, 0);
-	    }
-	};
+	});
 
-	// v8 likes predictible objects
-	function Item(fun, array) {
-	    this.fun = fun;
-	    this.array = array;
-	}
-	Item.prototype.run = function () {
-	    this.fun.apply(null, this.array);
-	};
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
+	module.exports = DOMElement;
 
 /***/ }
 /******/ ]);
