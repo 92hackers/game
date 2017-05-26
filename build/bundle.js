@@ -298,12 +298,12 @@
 	      rect: [0, 0, 42, 42]
 	    })
 
-		one.on(Hilo.event.POINTER_START, e => {
-			e.stopImmediatePropagation()
+	    one.on(Hilo.event.POINTER_START, e => {
+	        e.stopImmediatePropagation()
 
-			this.gamePreScene.visible = false;
-			this.gamePlayCardsScene.visible = true;
-		})
+	        this.gamePreScene.visible = false
+	        this.gamePlayCardsScene.visible = true
+	    })
 
 	    var two = this.two = new Bitmap({
 	      x: 740,
@@ -312,12 +312,12 @@
 	      rect: [0, 0, 42, 42]
 	    })
 
-		two.on(Hilo.event.POINTER_START, e => {
-			e.stopImmediatePropagation()
+	    two.on(Hilo.event.POINTER_START, e => {
+	        e.stopImmediatePropagation()
 
-			this.gamePreScene.visible = false
-			this.gameLinkScene.visible = true
-		})
+	        this.gamePreScene.visible = false
+	        this.gameLinkScene.visible = true
+	    })
 
 	    var back = this.back = new Bitmap({
 	      x: 740,
@@ -631,12 +631,12 @@
 	      rect: [0, 0, 48, 48]
 	    })
 
-		link.on(Hilo.event.POINTER_START, e => {
-			e.stopImmediatePropagation()
+	    link.on(Hilo.event.POINTER_START, e => {
+	        e.stopImmediatePropagation()
 
-			this.gamePlayCardsScene.visible = false
-			this.gamePreScene.visible = true
-		})
+	        this.gamePlayCardsScene.visible = false
+	        this.gamePreScene.visible = true
+	    })
 
 	    var bubble = this.bubble = new Bitmap({
 	      x: 740,
@@ -666,15 +666,12 @@
 	      rect: [0, 0, 42, 42]
 	    })
 
-		back.on(Hilo.event.POINTER_START, e => {
-			e.stopImmediatePropagation()
+	    back.on(Hilo.event.POINTER_START, e => {
+	        e.stopImmediatePropagation()
 
-			this.gamePlayCardsScene.visible = false
-
-			this.gameLinkScene.visible = true
-		})
-
-		// below are cards
+	        this.gamePlayCardsScene.visible = false
+	        this.gamePreScene.visible = true
+	    })
 
 	    var cardX = 258
 	    var cardY = 83
@@ -879,6 +876,13 @@
 	      rect: [0, 0, 48, 48]
 	    })
 
+	    link.on(Hilo.event.POINTER_START, e => {
+	        e.stopImmediatePropagation()
+
+	        this.gameLinkScene.visible = false
+	        this.gamePlayCardsScene.visible = true
+	    })
+
 	    var bubble = this.bubble = new Bitmap({
 	      x: 740,
 	      y: 148,
@@ -906,6 +910,8 @@
 	      image: resource.get('rightArrow'),
 	      rect: [0, 0, 42, 42]
 	    })
+
+	    // Cards below.
 
 	    var whiteBgWidth = 150
 	    var whiteBgHeight = 85
