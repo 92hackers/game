@@ -670,7 +670,7 @@
 	        e.stopImmediatePropagation()
 
 	        this.gamePlayCardsScene.visible = false
-	        this.gamePreScene.visible = true
+	        this.gameLinkScene.visible = true
 	    })
 
 	    var cardX = 258
