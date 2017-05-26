@@ -8,7 +8,9 @@ var Hilo = require('../hilo/core/Hilo');
 var Text = require('../hilo/view/Text');
 var BitmapText = require('../hilo/view/BitmapText')
 var DOMElement = require('../hilo/view/DOMElement')
+var Container = require('../hilo/view/Container')
 var Drawable = require('../hilo/view/Drawable')
+var Class = require('../hilo/core/Class')
 
 /**
  * @module weteach-trial-lesson/game
@@ -22,6 +24,9 @@ var Drawable = require('../hilo/view/Drawable')
 
 var outerWidth = 800
 var outerHeight = 450
+
+var scaleX = (window.innerWidth / outerWidth)
+var scaleY = window.innerHeight / outerHeight
 
 var innerBgWidth = 637
 
@@ -46,14 +51,19 @@ var game = {
   },
   initGame: function() {
     this._initStage();
-    // this._initScene();
-    // this.preScene();
-    // this.earlyScene();
-    // this.speechScene();
-    // this.playCards()
+
+    this._initScene();
+    this.preScene();
+    this.earlyScene();
+    this.speechScene();
+    this.playCards()
     this.linkLink()
+
     mediator.fire('game:init');
     this.ticker.start();
+
+    // common tasks.
+
   },
   tick: function(dt) {
     // this.fish.x += 3;
@@ -67,6 +77,8 @@ var game = {
       height: outerHeight,
       renderType: 'dom',
       container: this.stageContainer,
+      scaleX: scaleX,
+      scaleY: scaleY
       //   background: 'rgb(8, 45, 105)'
     });
 
@@ -76,7 +88,7 @@ var game = {
     ticker.addTick(stage);
     ticker.addTick(this);
   },
-  _initScene: function() {
+  _initScene: function(properties) {
     var bg = this.bg = new Bitmap({
       x: 0,
       y: 0,
@@ -93,7 +105,7 @@ var game = {
         },
         innerText: 'Choose a starting level'
       }),
-      width: 300,
+      width: 500,
       height: 50,
       x: 50,
       y: 30,
@@ -104,6 +116,7 @@ var game = {
     var galleryTop = 150;
 
     var pre = new Bitmap({
+      id: 'pre',
       x: 95,
       y: galleryTop,
       image: resource.get('pre'),
@@ -113,21 +126,46 @@ var game = {
       }
     })
 
+    // click pre image jump to pre scene.
+    pre.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation();
+      this.gameReadyScene.visible = false
+      this.gamePreScene.visible = true
+    })
+
     var early = new Bitmap({
+      id: 'early',
       x: 285,
       y: galleryTop,
       image: resource.get('early'),
       rect: [0, 0, galleryWith, galleryHeight]
     })
 
+    // click to jump to early scene.
+    early.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation();
+      this.gameReadyScene.visible = false
+      this.gameEarlyScene.visible = true
+    })
+
     var speech = new Bitmap({
+      id: 'speech',
       x: 475,
       y: galleryTop,
       image: resource.get('speech'),
       rect: [0, 0, galleryWith, galleryHeight]
     })
 
-    this.stage.addChild(bg, title, pre, early, speech);
+    // click to jump to speech scene.
+    speech.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation();
+      this.gameReadyScene.visible = false
+      this.gameSpeechScene.visible = true
+    })
+
+    var scene = this.gameReadyScene = new Container()
+    scene.addChild(bg, title, pre, early, speech);
+    scene.addTo(this.stage)
   },
   preScene: function() {
     var atTheZoo = this.atTheZoo = new Bitmap({
@@ -221,13 +259,146 @@ var game = {
       rect: [0, 0, 42, 42]
     })
 
-    this.stage.addChild(bubble, one, two, back, star, atTheZoo, leftMenuContainer, clock, face, hand, correct, incorrect, link)
+    back.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation();
+      this.gamePreScene.visible = false;
+      this.gameReadyScene.visible = true;
+    })
+
+    link.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation();
+      window.open('http://www.starfall.com/n/level-k/index/load.htm')
+    })
+
+    var gamePreScene = this.gamePreScene = new Container({
+      width: outerWidth,
+      height: outerHeight,
+      id: 'game-pre-scene',
+      background: 'rgb(8, 45, 105)'
+    })
+    gamePreScene.addChild(bubble, one, two, back, star, atTheZoo, leftMenuContainer, clock, face, hand, correct, incorrect, link)
+    gamePreScene.addTo(this.stage)
+    gamePreScene.visible = false
   },
   earlyScene: function() {
     var atTheZoo = this.favourite = new Bitmap({
       x: innerBgGapWidth,
       y: 0,
       image: resource.get('favourite'),
+      rect: [0, 0, innerBgWidth, outerHeight]
+    })
+
+    var leftMenuContainer = this.leftMenuContainer = new Bitmap({
+      x: 16,
+      y: 150,
+      image: resource.get('menuBar'),
+      rect: [0, 0, 48, 255]
+    })
+
+    var clock = this.clock = new Bitmap({
+      x: 27,
+      y: 164,
+      image: resource.get('clock'),
+      rect: [0, 0, 27, 27]
+    })
+
+    var face = this.face = new Bitmap({
+      x: 27,
+      y: 200,
+      image: resource.get('face'),
+      rect: [0, 0, 27, 27]
+    })
+
+    var hand = this.hand = new Bitmap({
+      x: 27,
+      y: 240,
+      image: resource.get('hand'),
+      rect: [0, 0, 27, 27]
+    })
+
+    var correct = this.correct = new Bitmap({
+      x: 27,
+      y: 287,
+      image: resource.get('correct'),
+      rect: [0, 0, 27, 27]
+    })
+
+    var incorrect = this.incorrect = new Bitmap({
+      x: 27,
+      y: 325,
+      image: resource.get('incorrect'),
+      rect: [0, 0, 27, 27]
+    })
+
+    var link = this.link = new Bitmap({
+      id: 'early-link',
+      x: 17,
+      y: 357,
+      image: resource.get('link'),
+      rect: [0, 0, 48, 48]
+    })
+
+    var bubble = this.bubble = new Bitmap({
+      x: 740,
+      y: 148,
+      image: resource.get('bubble'),
+      rect: [0, 0, 42, 42]
+    })
+
+    var star = this.star = new Bitmap({
+      x: 740,
+      y: 201,
+      image: resource.get('star'),
+      rect: [0, 0, 42, 42]
+    })
+
+    var one = this.one = new Bitmap({
+      x: 740,
+      y: 255,
+      image: resource.get('one'),
+      rect: [0, 0, 42, 42]
+    })
+
+    var two = this.two = new Bitmap({
+      x: 740,
+      y: 306,
+      image: resource.get('two'),
+      rect: [0, 0, 42, 42]
+    })
+
+    var back = this.back = new Bitmap({
+      x: 740,
+      y: 357,
+      image: resource.get('back'),
+      rect: [0, 0, 42, 42]
+    })
+
+    back.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation();
+      this.gameEarlyScene.visible = false;
+      this.gameReadyScene.visible = true;
+    })
+
+    link.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation();
+      window.open('http://www.starfall.com/n/level-a/learn-to-read/load.htm')
+    })
+
+    var gameEarlyScene = this.gameEarlyScene = new Container({
+      width: outerWidth,
+      height: outerHeight,
+      id: 'game-early-scene',
+      background: 'rgb(8, 45, 105)'
+    })
+    gameEarlyScene.addChild(bubble, one, two, back, star, atTheZoo, leftMenuContainer, clock, face, hand, correct, incorrect, link)
+    gameEarlyScene.addTo(this.stage)
+    gameEarlyScene.visible = false
+  },
+  speechScene: function() {
+    var atTheZoo = this.favourite = new Bitmap({
+      x: innerBgGapWidth,
+      y: 0,
+      image: resource.get('autumnFall'),
       rect: [0, 0, innerBgWidth, outerHeight]
     })
 
@@ -315,101 +486,26 @@ var game = {
       rect: [0, 0, 42, 42]
     })
 
-    this.stage.addChild(bubble, one, two, back, star, atTheZoo, leftMenuContainer, clock, face, hand, correct, incorrect, link)
-  },
-  speechScene: function() {
-    var atTheZoo = this.favourite = new Bitmap({
-      x: innerBgGapWidth,
-      y: 0,
-      image: resource.get('autumnFall'),
-      rect: [0, 0, innerBgWidth, outerHeight]
+    back.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation();
+      this.gameSpeechScene.visible = false
+      this.gameReadyScene.visible = true
     })
 
-    var leftMenuContainer = this.leftMenuContainer = new Bitmap({
-      x: 16,
-      y: 150,
-      image: resource.get('menuBar'),
-      rect: [0, 0, 48, 255]
+    link.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation();
+      window.open('http://www.starfall.com/n/level-k/index/load.htm')
     })
 
-    var clock = this.clock = new Bitmap({
-      x: 27,
-      y: 164,
-      image: resource.get('clock'),
-      rect: [0, 0, 27, 27]
+    var gameSpeechScene = this.gameSpeechScene = new Container({
+      width: outerWidth,
+      height: outerHeight,
+      id: 'game-speech-scene',
+      background: 'rgb(8, 45, 105)'
     })
-
-    var face = this.face = new Bitmap({
-      x: 27,
-      y: 200,
-      image: resource.get('face'),
-      rect: [0, 0, 27, 27]
-    })
-
-    var hand = this.hand = new Bitmap({
-      x: 27,
-      y: 240,
-      image: resource.get('hand'),
-      rect: [0, 0, 27, 27]
-    })
-
-    var correct = this.correct = new Bitmap({
-      x: 27,
-      y: 287,
-      image: resource.get('correct'),
-      rect: [0, 0, 27, 27]
-    })
-
-    var incorrect = this.incorrect = new Bitmap({
-      x: 27,
-      y: 325,
-      image: resource.get('incorrect'),
-      rect: [0, 0, 27, 27]
-    })
-
-    var link = this.link = new Bitmap({
-      x: 17,
-      y: 357,
-      image: resource.get('leftArrow'),
-      rect: [0, 0, 48, 48]
-    })
-
-    var bubble = this.bubble = new Bitmap({
-      x: 740,
-      y: 148,
-      image: resource.get('bubble'),
-      rect: [0, 0, 42, 42]
-    })
-
-    var star = this.star = new Bitmap({
-      x: 740,
-      y: 201,
-      image: resource.get('star'),
-      rect: [0, 0, 42, 42]
-    })
-
-    var one = this.one = new Bitmap({
-      x: 740,
-      y: 255,
-      image: resource.get('one'),
-      rect: [0, 0, 42, 42]
-    })
-
-    var two = this.two = new Bitmap({
-      x: 740,
-      y: 306,
-      image: resource.get('two'),
-      rect: [0, 0, 42, 42]
-    })
-
-    var back = this.back = new Bitmap({
-      x: 740,
-      y: 357,
-      image: resource.get('rightArrow'),
-      rect: [0, 0, 42, 42]
-    })
-
-    this.stage.addChild(bubble, one, two, back, star, atTheZoo, leftMenuContainer, clock, face, hand, correct, incorrect, link)
+    gameSpeechScene.addChild(bubble, one, two, back, star, atTheZoo, leftMenuContainer, clock, face, hand, correct, incorrect, link)
+    gameSpeechScene.addTo(this.stage)
+    gameSpeechScene.visible = false
   },
   playCards: function() {
     var bg = this.bg = new Bitmap({
@@ -632,7 +728,15 @@ var game = {
       rect: [0, 0, 117, 80]
     })
 
-    this.stage.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird, whiteBgBird, brownBird, whiteBgDuck, duck, whiteBgTiger, tiger, whiteBgMonkey, monkey, whiteBgRats, rats, whiteBgCow, cow)
+    var gamePlayCardsScene = this.gamePlayCardsScene = new Container({
+      width: outerWidth,
+      height: outerHeight,
+      id: 'game-play-cards-scene',
+      //   background: 'rgb(8, 45, 105)'
+    })
+    gamePlayCardsScene.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird, whiteBgBird, brownBird, whiteBgDuck, duck, whiteBgTiger, tiger, whiteBgMonkey, monkey, whiteBgRats, rats, whiteBgCow, cow)
+    gamePlayCardsScene.addTo(this.stage)
+    gamePlayCardsScene.visible = false
   },
   linkLink: function() {
     var bg = this.bg = new Bitmap({
@@ -717,7 +821,7 @@ var game = {
       y: 357,
       image: resource.get('rightArrow'),
       rect: [0, 0, 42, 42]
-})
+    })
 
     var whiteBgWidth = 150
     var whiteBgHeight = 85
@@ -739,6 +843,13 @@ var game = {
       x: whiteBgLeft,
       y: whiteBgTop,
     })
+
+    var duck = new Bitmap({
+      x: whiteBgLeft + 20,
+      y: whiteBgTop + 10,
+      image: resource.get('duck'),
+      rect: [0, 0, 100, 70]
+    })
     var whiteBgMonkey = new DOMElement({
       element: Hilo.createElement('div', {
         style: {
@@ -753,6 +864,14 @@ var game = {
       x: whiteBgLeft + whiteBgWidth + gap,
       y: whiteBgTop,
     })
+
+    var monkey = new Bitmap({
+      x: whiteBgLeft + whiteBgWidth + gap + 30,
+      y: whiteBgTop,
+      image: resource.get('monkey'),
+      rect: [0, 0, 100, whiteBgHeight]
+    })
+
     var whiteBgDuck2 = new DOMElement({
       element: Hilo.createElement('div', {
         style: {
@@ -767,6 +886,14 @@ var game = {
       x: whiteBgLeft + whiteBgWidth * 2 + gap * 2,
       y: whiteBgTop,
     })
+
+    var duck2 = new Bitmap({
+      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2 + 20,
+      y: whiteBgTop + 20,
+      image: resource.get('duck'),
+      rect: [0, 0, 100, 70]
+    })
+
     var whiteBgCow = new DOMElement({
       element: Hilo.createElement('div', {
         style: {
@@ -781,6 +908,14 @@ var game = {
       x: whiteBgLeft + whiteBgWidth * 3 + gap * 3,
       y: whiteBgTop,
     })
+
+    var cow = new Bitmap({
+      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3 + 20,
+      y: whiteBgTop + 10,
+      image: resource.get('cow'),
+      rect: [0, 0, 100, whiteBgHeight]
+    })
+
     var whiteBgBird = new DOMElement({
       element: Hilo.createElement('div', {
         style: {
@@ -795,6 +930,14 @@ var game = {
       x: whiteBgLeft,
       y: whiteBgTop + whiteBgHeight + gap,
     })
+
+    var brownBird = new Bitmap({
+      x: whiteBgLeft + 40,
+      y: whiteBgTop + whiteBgHeight + gap,
+      image: resource.get('brownBird'),
+      rect: [0, 0, 100, whiteBgHeight]
+    })
+
     var whiteBgBird2 = new DOMElement({
       element: Hilo.createElement('div', {
         style: {
@@ -809,6 +952,14 @@ var game = {
       x: whiteBgLeft + whiteBgWidth + gap,
       y: whiteBgTop + whiteBgHeight + gap,
     })
+
+    var brownBird2 = new Bitmap({
+      x: whiteBgLeft + whiteBgWidth + gap + 40,
+      y: whiteBgTop + whiteBgHeight + gap,
+      image: resource.get('brownBird'),
+      rect: [0, 0, 100, whiteBgHeight]
+    })
+
     var whiteBgRats = new DOMElement({
       element: Hilo.createElement('div', {
         style: {
@@ -823,6 +974,14 @@ var game = {
       x: whiteBgLeft + whiteBgWidth * 2 + gap * 2,
       y: whiteBgTop + whiteBgHeight + gap,
     })
+
+    var rats = new Bitmap({
+      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2 + 30,
+      y: whiteBgTop + whiteBgHeight + gap,
+      image: resource.get('rats'),
+      rect: [0, 0, 100, whiteBgHeight]
+    })
+
     var whiteBgRats2 = new DOMElement({
       element: Hilo.createElement('div', {
         style: {
@@ -837,6 +996,14 @@ var game = {
       x: whiteBgLeft + whiteBgWidth * 3 + gap * 3,
       y: whiteBgTop + whiteBgHeight + gap,
     })
+
+    var rats2 = new Bitmap({
+      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3 + 30,
+      y: whiteBgTop + whiteBgHeight + gap,
+      image: resource.get('rats'),
+      rect: [0, 0, 100, whiteBgHeight]
+    })
+
     var whiteBgCow2 = new DOMElement({
       element: Hilo.createElement('div', {
         style: {
@@ -850,6 +1017,12 @@ var game = {
       height: whiteBgHeight,
       x: whiteBgLeft,
       y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
+    })
+    var cow2 = new Bitmap({
+      x: whiteBgLeft + 20,
+      y: whiteBgTop + whiteBgHeight * 2 + gap * 2 + 10,
+      image: resource.get('cow'),
+      rect: [0, 0, 100, whiteBgHeight]
     })
     var whiteBgTiger = new DOMElement({
       element: Hilo.createElement('div', {
@@ -865,6 +1038,12 @@ var game = {
       x: whiteBgLeft + whiteBgWidth + gap,
       y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
     })
+    var tiger = new Bitmap({
+      x: whiteBgLeft + whiteBgWidth + gap + 30,
+      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
+      image: resource.get('tiger'),
+      rect: [0, 0, 100, whiteBgHeight]
+    })
     var whiteBgMonkey2 = new DOMElement({
       element: Hilo.createElement('div', {
         style: {
@@ -878,6 +1057,12 @@ var game = {
       height: whiteBgHeight,
       x: whiteBgLeft + whiteBgWidth * 2 + gap * 2,
       y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
+    })
+    var monkey2 = new Bitmap({
+      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2 + 30,
+      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
+      image: resource.get('monkey'),
+      rect: [0, 0, 100, whiteBgHeight]
     })
 
     var whiteBgTiger2 = new DOMElement({
@@ -894,8 +1079,22 @@ var game = {
       x: whiteBgLeft + whiteBgWidth * 3 + gap * 3,
       y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
     })
+    var tiger2 = new Bitmap({
+      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3 + 30,
+      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
+      image: resource.get('tiger'),
+      rect: [0, 0, 100, whiteBgHeight]
+    })
 
-    this.stage.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird, whiteBgDuck, whiteBgMonkey, whiteBgDuck2, whiteBgCow, whiteBgBird, whiteBgBird2, whiteBgRats, whiteBgRats2, whiteBgCow2, whiteBgTiger, whiteBgTiger2, whiteBgMonkey2)
+    var gameLinkScene = this.gameLinkScene = new Container({
+      width: outerWidth,
+      height: outerHeight,
+      id: 'game-link-scene',
+      //   background: 'rgb(8, 45, 105)'
+    })
+    gameLinkScene.addTo(this.stage)
+    gameLinkScene.visible = false
+    gameLinkScene.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird, whiteBgDuck, duck, whiteBgMonkey, whiteBgDuck2, whiteBgCow, whiteBgBird, whiteBgBird2, whiteBgRats, whiteBgRats2, whiteBgCow2, whiteBgTiger, whiteBgTiger2, whiteBgMonkey2, duck2, monkey, cow, brownBird, brownBird2, rats, rats2, cow2, tiger, monkey2, tiger2)
   }
 };
 
