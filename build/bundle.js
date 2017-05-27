@@ -92,6 +92,9 @@
 	    loading.start();
 	    resource.load();
 	  },
+	  previousScene: null,
+	  activeScene: null,
+	  activeQuestion: 0,
 	  bindEvent: function() {
 	    var that = this;
 	    mediator.on('resource:loaded', function(event) {
@@ -112,13 +115,10 @@
 	    this.playCards()
 	    this.linkLink()
 
-	    this.replaceLinkCards('pre')
+	    // this.replaceLinkCards('pre')
 
 	    mediator.fire('game:init');
 	    this.ticker.start();
-
-	    // common tasks.
-
 	  },
 	  tick: function(dt) {
 	    // this.fish.x += 3;
@@ -185,6 +185,7 @@
 	    pre.on(Hilo.event.POINTER_START, e => {
 	      e.stopImmediatePropagation();
 	      this.gameReadyScene.visible = false
+	      this.activeScene = this.gamePreScene
 	      this.gamePreScene.visible = true
 	    })
 
@@ -200,6 +201,7 @@
 	    early.on(Hilo.event.POINTER_START, e => {
 	      e.stopImmediatePropagation();
 	      this.gameReadyScene.visible = false
+	      this.activeScene = this.gameEarlyScene
 	      this.gameEarlyScene.visible = true
 	    })
 
@@ -215,6 +217,7 @@
 	    speech.on(Hilo.event.POINTER_START, e => {
 	      e.stopImmediatePropagation();
 	      this.gameReadyScene.visible = false
+	      this.activeScene = this.gameSpeechScene
 	      this.gameSpeechScene.visible = true
 	    })
 
@@ -303,6 +306,7 @@
 	    one.on(Hilo.event.POINTER_START, e => {
 	      e.stopImmediatePropagation()
 
+	      this.activeQuestion = 1
 	      this.gamePreScene.visible = false
 	      this.replaceCards('pre')
 	      this.gamePlayCardsScene.visible = true
@@ -318,8 +322,10 @@
 	    two.on(Hilo.event.POINTER_START, e => {
 	      e.stopImmediatePropagation()
 
+	      this.activeQuestion = 2
 	      this.gamePreScene.visible = false
-	      this.gameLinkScene.visible = true
+	      this.replaceCards('pre2')
+	      this.gamePlayCardsScene.visible = true
 	    })
 
 	    var back = this.back = new Bitmap({
@@ -429,11 +435,29 @@
 	      rect: [0, 0, 42, 42]
 	    })
 
+	    one.on(Hilo.event.POINTER_START, e => {
+	      e.stopImmediatePropagation()
+
+	      this.activeQuestion = 1
+	      this.gameEarlyScene.visible = false
+	      this.replaceCards('early')
+	      this.gamePlayCardsScene.visible = true
+	    })
+
 	    var two = this.two = new Bitmap({
 	      x: 740,
 	      y: 306,
 	      image: resource.get('two'),
 	      rect: [0, 0, 42, 42]
+	    })
+
+	    two.on(Hilo.event.POINTER_START, e => {
+	      e.stopImmediatePropagation()
+
+	      this.activeQuestion = 2
+	      this.gameEarlyScene.visible = false
+	      this.replaceCards('early2')
+	      this.gamePlayCardsScene.visible = true
 	    })
 
 	    var back = this.back = new Bitmap({
@@ -542,11 +566,29 @@
 	      rect: [0, 0, 42, 42]
 	    })
 
+	    one.on(Hilo.event.POINTER_START, e => {
+	      e.stopImmediatePropagation()
+
+	      this.activeQuestion = 1
+	      this.gameSpeechScene.visible = false
+	      this.replaceCards('speech')
+	      this.gamePlayCardsScene.visible = true
+	    })
+
 	    var two = this.two = new Bitmap({
 	      x: 740,
 	      y: 306,
 	      image: resource.get('two'),
 	      rect: [0, 0, 42, 42]
+	    })
+
+	    two.on(Hilo.event.POINTER_START, e => {
+	      e.stopImmediatePropagation()
+
+	      this.activeQuestion = 2
+	      this.gameSpeechScene.visible = false
+	      this.replaceCards('speech2')
+	      this.gamePlayCardsScene.visible = true
 	    })
 
 	    var back = this.back = new Bitmap({
@@ -584,6 +626,8 @@
 	      image: resource.get('indexBg'),
 	      rect: [0, 0, outerWidth, outerHeight]
 	    });
+
+	    var that = this
 
 	    var leftMenuContainer = this.leftMenuContainer = new Bitmap({
 	      x: 16,
@@ -638,7 +682,8 @@
 	      e.stopImmediatePropagation()
 
 	      this.gamePlayCardsScene.visible = false
-	      this.gamePreScene.visible = true
+	      this.activeScene.visible = true
+	      this.activeQuestion = 0
 	    })
 
 	    var bubble = this.bubble = new Bitmap({
@@ -671,6 +716,33 @@
 
 	    back.on(Hilo.event.POINTER_START, e => {
 	      e.stopImmediatePropagation()
+
+	      var scene = that.activeScene.id
+	      switch (scene) {
+	        case 'game-pre-scene':
+	          if (this.activeQuestion === 1) {
+	            this.replaceLinkCards('pre')
+	          } else {
+	            this.replaceLinkCards('pre2')
+	          }
+	          break
+
+	        case 'game-early-scene':
+	          if (this.activeQuestion === 1) {
+	            this.replaceLinkCards('early')
+	          } else {
+	            this.replaceLinkCards('early2')
+	          }
+	          break
+
+	        case 'game-speech-scene':
+	          if (this.activeQuestion === 1) {
+	            this.replaceLinkCards('speech')
+	          } else {
+	            this.replaceLinkCards('speech2')
+	          }
+	          break
+	      }
 
 	      this.gamePlayCardsScene.visible = false
 	      this.gameLinkScene.visible = true
@@ -848,6 +920,22 @@
 	        animals = ['elephant', 'horse', 'sheep', 'kitchen', 'crocodile', 'frog']
 	        break
 
+	      case 'early':
+	        animals = ['panda', 'kangaroo', 'dolphin', 'bear', 'lion', 'kitten']
+	        break
+
+	      case 'early2':
+	        animals = ['pirate', 'skates', 'puppy', 'rabbit', 'whale', 'shark']
+	        break
+
+	      case 'speech':
+	        animals = ['fridge', 'fallOver', 'ill', 'cook', 'cut', 'chemist']
+	        break
+
+	      case 'speech2':
+	        animals = ['saltPepper', 'meal', 'honey', 'jam', 'pizza', 'medicine']
+	        break
+
 	      default:
 	        animals = []
 	        break
@@ -862,6 +950,8 @@
 	      image: resource.get('indexBg'),
 	      rect: [0, 0, outerWidth, outerHeight]
 	    });
+
+	    var that = this
 
 	    var leftMenuContainer = this.leftMenuContainer = new Bitmap({
 	      x: 16,
@@ -916,7 +1006,7 @@
 	      e.stopImmediatePropagation()
 
 	      this.gameLinkScene.visible = false
-	      this.gamePlayCardsScene.visible = true
+	      this.activeScene.visible = true
 	    })
 
 	    var bubble = this.bubble = new Bitmap({
@@ -946,280 +1036,47 @@
 	      image: resource.get('rightArrow'),
 	      rect: [0, 0, 42, 42]
 	    })
+
+	    back.on(Hilo.event.POINTER_START, e => {
+	      e.stopImmediatePropagation()
+
+	      if (this.activeQuestion === 2) {
+	        this.gameLinkScene.visible = false
+	        this.activeScene.visible = true
+	        return
+	      }
+
+	      var scene = that.activeScene.id
+	      switch (scene) {
+	        case 'game-pre-scene':
+	          this.replaceCards('pre2')
+	          break
+
+	        case 'game-early-scene':
+	          this.replaceCards('early2')
+	          break
+
+	        case 'game-speech-scene':
+	          this.replaceCards('speech2')
+	          break
+	      }
+
+	      this.activeQuestion = 2
+	      this.gameLinkScene.visible = false
+	      this.gamePlayCardsScene.visible = true
+	    })
+
 	    // Cards below.
-
-	    var whiteBgWidth = 150
-	    var whiteBgHeight = 85
-	    var whiteBgTop = 60
-	    var whiteBgLeft = 70
-	    var gap = 20
-
-	    var whiteBgDuck = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft,
-	      y: whiteBgTop,
-	    })
-
-	    var duck = new Bitmap({
-	      x: whiteBgLeft + 20,
-	      y: whiteBgTop + 10,
-	      image: resource.get('duck'),
-	      rect: [0, 0, 100, 70]
-	    })
-	    var whiteBgMonkey = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft + whiteBgWidth + gap,
-	      y: whiteBgTop,
-	    })
-
-	    var monkey = new Bitmap({
-	      x: whiteBgLeft + whiteBgWidth + gap + 30,
-	      y: whiteBgTop,
-	      image: resource.get('monkey'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-
-	    var whiteBgDuck2 = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2,
-	      y: whiteBgTop,
-	    })
-
-	    var duck2 = new Bitmap({
-	      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2 + 20,
-	      y: whiteBgTop + 20,
-	      image: resource.get('duck'),
-	      rect: [0, 0, 100, 70]
-	    })
-
-	    var whiteBgCow = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3,
-	      y: whiteBgTop,
-	    })
-
-	    var cow = new Bitmap({
-	      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3 + 20,
-	      y: whiteBgTop + 10,
-	      image: resource.get('cow'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-
-	    var whiteBgBird = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft,
-	      y: whiteBgTop + whiteBgHeight + gap,
-	    })
-
-	    var brownBird = new Bitmap({
-	      x: whiteBgLeft + 40,
-	      y: whiteBgTop + whiteBgHeight + gap,
-	      image: resource.get('brownBird'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-
-	    var whiteBgBird2 = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft + whiteBgWidth + gap,
-	      y: whiteBgTop + whiteBgHeight + gap,
-	    })
-
-	    var brownBird2 = new Bitmap({
-	      x: whiteBgLeft + whiteBgWidth + gap + 40,
-	      y: whiteBgTop + whiteBgHeight + gap,
-	      image: resource.get('brownBird'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-
-	    var whiteBgRats = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2,
-	      y: whiteBgTop + whiteBgHeight + gap,
-	    })
-
-	    var rats = new Bitmap({
-	      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2 + 30,
-	      y: whiteBgTop + whiteBgHeight + gap,
-	      image: resource.get('rats'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-
-	    var whiteBgRats2 = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3,
-	      y: whiteBgTop + whiteBgHeight + gap,
-	    })
-
-	    var rats2 = new Bitmap({
-	      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3 + 30,
-	      y: whiteBgTop + whiteBgHeight + gap,
-	      image: resource.get('rats'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-
-	    var whiteBgCow2 = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft,
-	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
-	    })
-	    var cow2 = new Bitmap({
-	      x: whiteBgLeft + 20,
-	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2 + 10,
-	      image: resource.get('cow'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-	    var whiteBgTiger = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft + whiteBgWidth + gap,
-	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
-	    })
-	    var tiger = new Bitmap({
-	      x: whiteBgLeft + whiteBgWidth + gap + 30,
-	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
-	      image: resource.get('tiger'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-	    var whiteBgMonkey2 = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2,
-	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
-	    })
-	    var monkey2 = new Bitmap({
-	      x: whiteBgLeft + whiteBgWidth * 2 + gap * 2 + 30,
-	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
-	      image: resource.get('monkey'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-
-	    var whiteBgTiger2 = new DOMElement({
-	      element: Hilo.createElement('div', {
-	        style: {
-	          background: '#fff',
-	          position: 'absolute',
-	          borderRadius: '20px',
-	          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-	        }
-	      }),
-	      width: whiteBgWidth,
-	      height: whiteBgHeight,
-	      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3,
-	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
-	    })
-	    var tiger2 = new Bitmap({
-	      x: whiteBgLeft + whiteBgWidth * 3 + gap * 3 + 30,
-	      y: whiteBgTop + whiteBgHeight * 2 + gap * 2,
-	      image: resource.get('tiger'),
-	      rect: [0, 0, 100, whiteBgHeight]
-	    })
-
 	    var gameLinkScene = this.gameLinkScene = new Container({
 	      width: outerWidth,
 	      height: outerHeight,
 	      id: 'game-link-scene',
 	      //   background: 'rgb(8, 45, 105)'
 	    })
+
 	    gameLinkScene.addTo(this.stage)
 	    gameLinkScene.visible = false
-	    gameLinkScene.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird, whiteBgDuck, duck, whiteBgMonkey, whiteBgDuck2, whiteBgCow, whiteBgBird, whiteBgBird2, whiteBgRats, whiteBgRats2, whiteBgCow2, whiteBgTiger, whiteBgTiger2, whiteBgMonkey2, duck2, monkey, cow, brownBird, brownBird2, rats, rats2, cow2, tiger, monkey2, tiger2)
+	    gameLinkScene.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird)
 	  },
 	  getRandomInt: function(min, max) {
 	    var min = Math.ceil(min);
@@ -1259,23 +1116,45 @@
 	      cardsArr[tmp[5 - i]] = animals[i]
 	    }
 
+	    var colors = [
+	      'rgb(216,155,11)',
+	      'rgb(33,160,180)',
+	      'rgb(130,201,63)',
+	      'rgb(66,209,252)',
+	      'rgb(252,74,136)',
+	      'rgb(134,71,254)',
+	      'rgb(39,73,254)',
+	      'rgb(137,197,6)',
+	      'rgb(17,137,135)',
+	      'rgb(251,78,9)',
+	      'rgb(253,134,9)',
+	      'rgb(251,25,8)'
+	    ]
+
+	    var alphaBats = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+
+	    function addAgain() {
+	      that.gameLinkScene.addChild(that.removedView)
+	    }
+
 	    function generateCards(animals) {
 	      var result = []
 
 	      if (animals) {
 	        animals.forEach((item, index) => {
-	          var xTimes = item % 4 - 1
-	          var yTimes = item % 3 - 1
+	          var xTimes = index % 4
+	          var yTimes = index % 3
 	          var x = whiteBgLeft + whiteBgWidth * xTimes + gap * xTimes
 	          var y = whiteBgTop + whiteBgHeight * yTimes + gap * yTimes
 
 	          var bg = new DOMElement({
+	            id: 'link-bg-' + index,
 	            element: Hilo.createElement('div', {
 	              style: {
 	                background: '#fff',
 	                position: 'absolute',
 	                borderRadius: '20px',
-	                boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+	                boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)',
 	              }
 	            }),
 	            width: whiteBgWidth,
@@ -1285,13 +1164,51 @@
 	          })
 	          result.push(bg)
 
+	          bg.on(Hilo.event.POINTER_START, e => {
+	            e.stopImmediatePropagation()
+	            addAgain()
+	          })
+
 	          var img = new Bitmap({
+	            id: 'link-img-' + index,
 	            x: x + 20,
-	            y: x + 10,
-	            image: resource.get('item'),
+	            y: y,
+	            image: resource.get(item),
 	            rect: [0, 0, 100, whiteBgHeight]
 	          })
 	          result.push(img)
+
+	          img.on(Hilo.event.POINTER_START, e => {
+	            e.stopImmediatePropagation()
+	            addAgain()
+	          })
+
+	          var bgAlpha = new DOMElement({
+	            id: 'link-bg-alpha-' + index,
+	            element: Hilo.createElement('div', {
+	              style: {
+	                background: colors[index],
+	                position: 'absolute',
+	                borderRadius: '20px',
+	                boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)',
+	                fontSize: '60px',
+	                color: '#fff',
+	                textAlign: 'center',
+	              },
+	              innerText: alphaBats[index]
+	            }),
+	            width: whiteBgWidth,
+	            height: whiteBgHeight,
+	            x: x,
+	            y: y,
+	          })
+	          result.push(bgAlpha)
+
+	          bgAlpha.on(Hilo.event.POINTER_START, e => {
+	            e.stopImmediatePropagation()
+	            that.removedView = bgAlpha
+	            that.gameLinkScene.removeChild(bgAlpha)
+	          })
 	        })
 	      }
 
@@ -1299,7 +1216,8 @@
 	    }
 
 	    this.gameLinkScene.addChild(...generateCards(cardsArr))
-	  }
+	  },
+	  removedView: null,
 	};
 
 	module.exports = game;
@@ -4650,6 +4568,34 @@
 	    { id: 'crocodile', src: 'src/images/crocodile.jpg' },
 	    { id: 'elephant', src: 'src/images/elephant.jpg' },
 	    { id: 'horse', src: 'src/images/horse.jpg' },
+
+	    { id: 'panda', src: 'src/images/panda.jpg' },
+	    { id: 'kangaroo', src: 'src/images/kangaroo.jpg' },
+	    { id: 'dolphin', src: 'src/images/dolphin.jpg' },
+	    { id: 'bear', src: 'src/images/bear.jpg' },
+	    { id: 'lion', src: 'src/images/lion.jpg' },
+	    { id: 'kitten', src: 'src/images/kitten.jpg' },
+
+	    { id: 'pirate', src: 'src/images/pirate.jpg' },
+	    { id: 'skates', src: 'src/images/skates.jpg' },
+	    { id: 'puppy', src: 'src/images/puppy.jpg' },
+	    { id: 'rabbit', src: 'src/images/rabbit.jpg' },
+	    { id: 'whale', src: 'src/images/whale.jpg' },
+	    { id: 'shark', src: 'src/images/shark.jpg' },
+
+	    { id: 'fridge', src: 'src/images/fridge.jpg' },
+	    { id: 'fallOver', src: 'src/images/fall-over.jpg' },
+	    { id: 'ill', src: 'src/images/ill.png' },
+	    { id: 'cook', src: 'src/images/cook.jpg' },
+	    { id: 'cut', src: 'src/images/cut.jpg' },
+	    { id: 'chemist', src: 'src/images/chemist.png' },
+
+	    { id: 'saltPepper', src: 'src/images/salt-pepper.jpg' },
+	    { id: 'meal', src: 'src/images/meal.jpg' },
+	    { id: 'honey', src: 'src/images/honey.jpg' },
+	    { id: 'jam', src: 'src/images/jam.jpg' },
+	    { id: 'pizza', src: 'src/images/pizza.jpg' },
+	    { id: 'medicine', src: 'src/images/medicine.jpg' },
 	  ],
 	  load: function() {
 	    var res = this.res;

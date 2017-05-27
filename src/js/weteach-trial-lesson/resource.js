@@ -46,6 +46,34 @@ var resource = {
     { id: 'crocodile', src: 'src/images/crocodile.jpg' },
     { id: 'elephant', src: 'src/images/elephant.jpg' },
     { id: 'horse', src: 'src/images/horse.jpg' },
+
+    { id: 'panda', src: 'src/images/panda.jpg' },
+    { id: 'kangaroo', src: 'src/images/kangaroo.jpg' },
+    { id: 'dolphin', src: 'src/images/dolphin.jpg' },
+    { id: 'bear', src: 'src/images/bear.jpg' },
+    { id: 'lion', src: 'src/images/lion.jpg' },
+    { id: 'kitten', src: 'src/images/kitten.jpg' },
+
+    { id: 'pirate', src: 'src/images/pirate.jpg' },
+    { id: 'skates', src: 'src/images/skates.jpg' },
+    { id: 'puppy', src: 'src/images/puppy.jpg' },
+    { id: 'rabbit', src: 'src/images/rabbit.jpg' },
+    { id: 'whale', src: 'src/images/whale.jpg' },
+    { id: 'shark', src: 'src/images/shark.jpg' },
+
+    { id: 'fridge', src: 'src/images/fridge.jpg' },
+    { id: 'fallOver', src: 'src/images/fall-over.jpg' },
+    { id: 'ill', src: 'src/images/ill.png' },
+    { id: 'cook', src: 'src/images/cook.jpg' },
+    { id: 'cut', src: 'src/images/cut.jpg' },
+    { id: 'chemist', src: 'src/images/chemist.png' },
+
+    { id: 'saltPepper', src: 'src/images/salt-pepper.jpg' },
+    { id: 'meal', src: 'src/images/meal.jpg' },
+    { id: 'honey', src: 'src/images/honey.jpg' },
+    { id: 'jam', src: 'src/images/jam.jpg' },
+    { id: 'pizza', src: 'src/images/pizza.jpg' },
+    { id: 'medicine', src: 'src/images/medicine.jpg' },
   ],
   load: function() {
     var res = this.res;
