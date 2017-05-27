@@ -40,6 +40,12 @@ var resource = {
     { id: 'cow', src: 'src/images/cow.jpg' },
     { id: 'leftArrow', src: 'src/images/left-arrow.png' },
     { id: 'rightArrow', src: 'src/images/right-arrow.png' },
+    { id: 'sheep', src: 'src/images/sheep.jpg' },
+    { id: 'kitchen', src: 'src/images/kitchen.jpg' },
+    { id: 'frog', src: 'src/images/frog.jpg' },
+    { id: 'crocodile', src: 'src/images/crocodile.jpg' },
+    { id: 'elephant', src: 'src/images/elephant.jpg' },
+    { id: 'horse', src: 'src/images/horse.jpg' },
   ],
   load: function() {
     var res = this.res;

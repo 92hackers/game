@@ -59,6 +59,8 @@ var game = {
     this.playCards()
     this.linkLink()
 
+    this.replaceLinkCards('pre')
+
     mediator.fire('game:init');
     this.ticker.start();
 
@@ -246,10 +248,11 @@ var game = {
     })
 
     one.on(Hilo.event.POINTER_START, e => {
-        e.stopImmediatePropagation()
+      e.stopImmediatePropagation()
 
-        this.gamePreScene.visible = false
-        this.gamePlayCardsScene.visible = true
+      this.gamePreScene.visible = false
+      this.replaceCards('pre')
+      this.gamePlayCardsScene.visible = true
     })
 
     var two = this.two = new Bitmap({
@@ -260,10 +263,10 @@ var game = {
     })
 
     two.on(Hilo.event.POINTER_START, e => {
-        e.stopImmediatePropagation()
+      e.stopImmediatePropagation()
 
-        this.gamePreScene.visible = false
-        this.gameLinkScene.visible = true
+      this.gamePreScene.visible = false
+      this.gameLinkScene.visible = true
     })
 
     var back = this.back = new Bitmap({
@@ -579,10 +582,10 @@ var game = {
     })
 
     link.on(Hilo.event.POINTER_START, e => {
-        e.stopImmediatePropagation()
+      e.stopImmediatePropagation()
 
-        this.gamePlayCardsScene.visible = false
-        this.gamePreScene.visible = true
+      this.gamePlayCardsScene.visible = false
+      this.gamePreScene.visible = true
     })
 
     var bubble = this.bubble = new Bitmap({
@@ -614,157 +617,190 @@ var game = {
     })
 
     back.on(Hilo.event.POINTER_START, e => {
-        e.stopImmediatePropagation()
+      e.stopImmediatePropagation()
 
-        this.gamePlayCardsScene.visible = false
-        this.gameLinkScene.visible = true
+      this.gamePlayCardsScene.visible = false
+      this.gameLinkScene.visible = true
     })
 
+    var gamePlayCardsScene = null
+    gamePlayCardsScene = this.gamePlayCardsScene = new Container({
+      width: outerWidth,
+      height: outerHeight,
+    })
+    gamePlayCardsScene.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird)
+
+    gamePlayCardsScene.addTo(this.stage)
+    gamePlayCardsScene.visible = false
+  },
+  replaceCards: function(type) {
+    // cards  below.
     var cardX = 258
     var cardY = 83
     var gap = 15
+    var cardWidth = 133
+    var cardHeight = 173
 
-    var whiteBgBird = this.whiteBg = new DOMElement({
-      element: Hilo.createElement('div', {
-        style: {
-          background: '#fff',
-          position: 'absolute',
-          borderRadius: '20px',
-          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+    var cardClick = 0
+
+    var that = this
+    var activeContainer = null
+
+    function ifRemoveCard(view) {
+      if (view) {
+        activeContainer = view.parent
+        var target = view.id
+        var post = target.match(/-\d?$/)
+
+        var textId = 'cardText' + post
+        var bgId = 'cardBg' + post
+        var txtBgId = 'cardTxtBg' + post
+        var imgId = 'cardAnimal' + post
+
+        var txtlist = [txtBgId, textId]
+        var imgList = [imgId, bgId]
+
+        switch (cardClick) {
+          case 0:
+            imgList.forEach(i => activeContainer.removeChildById(i))
+            cardClick += 1
+            break
+          case 1:
+            txtlist.forEach(item => activeContainer.removeChildById(item))
+            cardClick = 0
+            break
         }
-      }),
-      width: 133,
-      height: 173,
-      x: cardX,
-      y: cardY,
-    })
 
-    var brownBird = new Bitmap({
-      x: cardX + 30,
-      y: cardY + 35,
-      image: resource.get('brownBird'),
-      rect: [0, 0, 73, 90]
-    })
+        if (post[0] === '-0' && cardClick === 0) {
+          var boomFlower = new Bitmap({
+            x: 94,
+            y: 47,
+            image: resource.get('boomFlower'),
+            rect: [0, 0, 542, 350]
+          })
 
-    var whiteBgDuck = this.whiteBg = new DOMElement({
-      element: Hilo.createElement('div', {
-        style: {
-          background: '#fff',
-          position: 'absolute',
-          borderRadius: '20px',
-          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+          that.gamePlayCardsScene.addChild(boomFlower)
         }
-      }),
-      width: 133,
-      height: 173,
-      x: cardX + gap,
-      y: cardY + gap,
-    })
+      }
+    }
 
-    var duck = new Bitmap({
-      x: cardX + gap,
-      y: cardY + 38 + gap,
-      image: resource.get('duck'),
-      rect: [0, 0, 131, 79]
-    })
+    function generateCards(arr = []) {
+      var result = []
 
-    var whiteBgTiger = this.whiteBg = new DOMElement({
-      element: Hilo.createElement('div', {
-        style: {
-          background: '#fff',
-          position: 'absolute',
-          borderRadius: '20px',
-          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+      arr.forEach((item, index) => {
+        var x = cardX + gap * index
+        var y = cardY + gap * index
+
+        // white background for text card
+        var txtBg = new DOMElement({
+          id: 'cardTxtBg-' + index,
+          element: Hilo.createElement('div', {
+            style: {
+              background: '#fff',
+              position: 'absolute',
+              borderRadius: '20px',
+              boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)'
+            }
+          }),
+          width: cardWidth,
+          height: cardHeight,
+          x: x,
+          y: y,
+        })
+        result.push(txtBg)
+
+        // English words.   text
+        var txt = ''
+        switch (item) { // transform some words.
+          case 'brownBird':
+            txt = 'bird'
+            break
+
+          case 'rats':
+            txt = 'mouse'
+            break
+
+          default:
+            txt = item
         }
-      }),
-      width: 133,
-      height: 173,
-      x: cardX + gap * 2,
-      y: cardY + gap * 2,
-    })
 
-    var tiger = new Bitmap({
-      x: cardX + 0 + gap * 2,
-      y: cardY + 38 + gap * 2,
-      image: resource.get('tiger'),
-      rect: [0, 0, 133, 138]
-    })
+        var word = new DOMElement({
+          id: 'cardText-' + index,
+          element: Hilo.createElement('p', {
+            style: {
+              position: 'absolute',
+              fontSize: '24px',
+            },
+            innerText: txt,
+          }),
+          x: x,
+          y: y + 30,
+          width: cardWidth,
+          height: '50',
+        })
+        result.push(word)
 
-    var whiteBgMonkey = this.whiteBg = new DOMElement({
-      element: Hilo.createElement('div', {
-        style: {
-          background: '#fff',
-          position: 'absolute',
-          borderRadius: '20px',
-          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-        }
-      }),
-      width: 133,
-      height: 173,
-      x: cardX + gap * 3,
-      y: cardY + gap * 3,
-    })
+        // white background for image
+        var bg = new DOMElement({
+          id: 'cardBg-' + index,
+          element: Hilo.createElement('div', {
+            style: {
+              background: '#fff',
+              position: 'absolute',
+              borderRadius: '20px',
+              boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)'
+            }
+          }),
+          width: cardWidth,
+          height: cardHeight,
+          x: x,
+          y: y,
+        })
+        result.push(bg)
 
-    var monkey = new Bitmap({
-      x: cardX + 5 + gap * 3,
-      y: cardY + 20 + gap * 3,
-      image: resource.get('monkey'),
-      rect: [0, 0, 121, 138]
-    })
+        // image.
+        var img = new Bitmap({
+          id: 'cardAnimal-' + index,
+          x: x + 10,
+          y: y + 40,
+          image: resource.get(item),
+          rect: [0, 0, cardWidth - 20, 90]
+        })
+        result.push(img)
 
-    var whiteBgRats = this.whiteBg = new DOMElement({
-      element: Hilo.createElement('div', {
-        style: {
-          background: '#fff',
-          position: 'absolute',
-          borderRadius: '20px',
-          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-        }
-      }),
-      width: 133,
-      height: 173,
-      x: cardX + gap * 4,
-      y: cardY + gap * 4,
-    })
+        // bind click event on elements.
+        var list = [bg, img, txtBg, word]
 
-    var rats = new Bitmap({
-      x: cardX + 10 + gap * 4,
-      y: cardY + 40 + gap * 4,
-      image: resource.get('rats'),
-      rect: [0, 0, 106, 73]
-    })
+        list.forEach(item => {
+          item.on(Hilo.event.POINTER_START, e => {
+            e.stopImmediatePropagation()
+            ifRemoveCard(item)
+          })
+        })
+      })
 
-    var whiteBgCow = this.whiteBg = new DOMElement({
-      element: Hilo.createElement('div', {
-        style: {
-          background: '#fff',
-          position: 'absolute',
-          borderRadius: '20px',
-          boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-        }
-      }),
-      width: 133,
-      height: 173,
-      x: cardX + gap * 5,
-      y: cardY + gap * 5,
-    })
+      return result
+    }
 
-    var cow = new Bitmap({
-      x: cardX + 5 + gap * 5,
-      y: cardY + 40 + gap * 5,
-      image: resource.get('cow'),
-      rect: [0, 0, 117, 80]
-    })
+    this.gamePlayCardsScene.addChild(...generateCards(that.generateAnimals(type)))
+  },
+  generateAnimals: function(type) {
+    var animals = []
+    switch (type) {
+      case 'pre':
+        animals = ['brownBird', 'duck', 'tiger', 'monkey', 'rats', 'cow']
+        break
 
-    var gamePlayCardsScene = this.gamePlayCardsScene = new Container({
-      width: outerWidth,
-      height: outerHeight,
-      id: 'game-play-cards-scene',
-      //   background: 'rgb(8, 45, 105)'
-    })
-    gamePlayCardsScene.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird, whiteBgBird, brownBird, whiteBgDuck, duck, whiteBgTiger, tiger, whiteBgMonkey, monkey, whiteBgRats, rats, whiteBgCow, cow)
-    gamePlayCardsScene.addTo(this.stage)
-    gamePlayCardsScene.visible = false
+      case 'pre2':
+        animals = ['elephant', 'horse', 'sheep', 'kitchen', 'crocodile', 'frog']
+        break
+
+      default:
+        animals = []
+        break
+    }
+
+    return animals
   },
   linkLink: function() {
     var bg = this.bg = new Bitmap({
@@ -824,10 +860,10 @@ var game = {
     })
 
     link.on(Hilo.event.POINTER_START, e => {
-        e.stopImmediatePropagation()
+      e.stopImmediatePropagation()
 
-        this.gameLinkScene.visible = false
-        this.gamePlayCardsScene.visible = true
+      this.gameLinkScene.visible = false
+      this.gamePlayCardsScene.visible = true
     })
 
     var bubble = this.bubble = new Bitmap({
@@ -857,7 +893,6 @@ var game = {
       image: resource.get('rightArrow'),
       rect: [0, 0, 42, 42]
     })
-
     // Cards below.
 
     var whiteBgWidth = 150
@@ -1132,6 +1167,85 @@ var game = {
     gameLinkScene.addTo(this.stage)
     gameLinkScene.visible = false
     gameLinkScene.addChild(bg, leftMenuContainer, clock, face, hand, correct, incorrect, link, back, bubble, star, bird, whiteBgDuck, duck, whiteBgMonkey, whiteBgDuck2, whiteBgCow, whiteBgBird, whiteBgBird2, whiteBgRats, whiteBgRats2, whiteBgCow2, whiteBgTiger, whiteBgTiger2, whiteBgMonkey2, duck2, monkey, cow, brownBird, brownBird2, rats, rats2, cow2, tiger, monkey2, tiger2)
+  },
+  getRandomInt: function(min, max) {
+    var min = Math.ceil(min);
+    var max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+  },
+  replaceLinkCards: function(type) {
+    var whiteBgWidth = 150
+    var whiteBgHeight = 85
+    var whiteBgTop = 60
+    var whiteBgLeft = 70
+    var gap = 20
+    var that = this
+
+    var animals = this.generateAnimals(type)
+    var totalLength = animals.length * 2
+    var cardsArr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    animals.forEach(item => { //  这个随机数 不行，还需要能够枚举，且不能重复。这个问题非常有意思。
+      var index = this.getRandomInt(0, 11)
+      while (cardsArr[index] !== 0) {
+        index = this.getRandomInt(0, 11)
+      }
+
+      if (cardsArr[index] === 0 && 0 <= index && index <= 11) {
+        cardsArr[index] = item
+      }
+    })
+
+    var tmp = []
+    cardsArr.forEach((item, index) => {
+      if (item === 0) {
+        tmp.push(index)
+      }
+    })
+
+    for (var i = 5; i > -1; i--) { //  逆向 push.
+      cardsArr[tmp[5 - i]] = animals[i]
+    }
+
+    function generateCards(animals) {
+      var result = []
+
+      if (animals) {
+        animals.forEach((item, index) => {
+          var xTimes = item % 4 - 1
+          var yTimes = item % 3 - 1
+          var x = whiteBgLeft + whiteBgWidth * xTimes + gap * xTimes
+          var y = whiteBgTop + whiteBgHeight * yTimes + gap * yTimes
+
+          var bg = new DOMElement({
+            element: Hilo.createElement('div', {
+              style: {
+                background: '#fff',
+                position: 'absolute',
+                borderRadius: '20px',
+                boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
+              }
+            }),
+            width: whiteBgWidth,
+            height: whiteBgHeight,
+            x: x,
+            y: y,
+          })
+          result.push(bg)
+
+          var img = new Bitmap({
+            x: x + 20,
+            y: x + 10,
+            image: resource.get('item'),
+            rect: [0, 0, 100, whiteBgHeight]
+          })
+          result.push(img)
+        })
+      }
+
+      return result
+    }
+
+    this.gameLinkScene.addChild(...generateCards(cardsArr))
   }
 };
 
