@@ -172,7 +172,7 @@
 
 	    var pre = new Bitmap({
 	      id: 'pre',
-	      x: 95,
+	      x: 135,
 	      y: galleryTop,
 	      image: resource.get('pre'),
 	      rect: [0, 0, galleryWith, galleryHeight],
@@ -191,7 +191,7 @@
 
 	    var early = new Bitmap({
 	      id: 'early',
-	      x: 285,
+	      x: 315,
 	      y: galleryTop,
 	      image: resource.get('early'),
 	      rect: [0, 0, galleryWith, galleryHeight]
@@ -207,7 +207,7 @@
 
 	    var speech = new Bitmap({
 	      id: 'speech',
-	      x: 475,
+	      x: 505,
 	      y: galleryTop,
 	      image: resource.get('speech'),
 	      rect: [0, 0, galleryWith, galleryHeight]
@@ -917,7 +917,7 @@
 	        break
 
 	      case 'pre2':
-	        animals = ['elephant', 'horse', 'sheep', 'kitchen', 'crocodile', 'frog']
+	        animals = ['elephant', 'horse', 'sheep', 'chicken', 'crocodile', 'frog']
 	        break
 
 	      case 'early':
@@ -4563,7 +4563,7 @@
 	    { id: 'leftArrow', src: 'src/images/left-arrow.png' },
 	    { id: 'rightArrow', src: 'src/images/right-arrow.png' },
 	    { id: 'sheep', src: 'src/images/sheep.jpg' },
-	    { id: 'kitchen', src: 'src/images/kitchen.jpg' },
+	    { id: 'chicken', src: 'src/images/chicken.jpg' },
 	    { id: 'frog', src: 'src/images/frog.jpg' },
 	    { id: 'crocodile', src: 'src/images/crocodile.jpg' },
 	    { id: 'elephant', src: 'src/images/elephant.jpg' },
