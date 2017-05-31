@@ -172,6 +172,22 @@ var game = {
     scene.addChild(bg, title, pre, early, speech);
     scene.addTo(this.stage)
   },
+  boomFlower: function() {
+    var that = this
+    return function(scene) {
+      var boomFlower = new Bitmap({
+        x: 124,
+        y: 47,
+        image: resource.get('boomFlower'),
+        rect: [0, 0, 542, 350]
+      })
+
+      scene.addChild(boomFlower)
+      setTimeout(function() {
+        scene.removeChild(boomFlower)
+      }, 2000)
+    }
+  },
   clearBoomFlower: function() {
     if (this.boomFlower) {
       this.gamePlayCardsScene.removeChild(this.boomFlower)
@@ -246,6 +262,12 @@ var game = {
       y: 201,
       image: resource.get('star'),
       rect: [0, 0, 42, 42]
+    })
+
+    star.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation()
+
+      this.boomFlower()(this.gamePreScene)
     })
 
     var one = this.one = new Bitmap({
@@ -384,6 +406,12 @@ var game = {
       rect: [0, 0, 42, 42]
     })
 
+    star.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation()
+
+      this.boomFlower()(this.gameEarlyScene)
+    })
+
     var one = this.one = new Bitmap({
       x: 740,
       y: 255,
@@ -517,6 +545,12 @@ var game = {
       y: 201,
       image: resource.get('star'),
       rect: [0, 0, 42, 42]
+    })
+
+    star.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation()
+
+      this.boomFlower()(this.gameSpeechScene)
     })
 
     var one = this.one = new Bitmap({
@@ -664,6 +698,12 @@ var game = {
       rect: [0, 0, 42, 42]
     })
 
+    star.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation()
+
+      this.boomFlower()(this.gamePlayCardsScene)
+    })
+
     var bird = this.bird = new Bitmap({
       x: 720,
       y: 265,
@@ -761,14 +801,33 @@ var game = {
         }
 
         if (post[0] === '-0' && cardClick === 0) {
-          var boomFlower = that.boomFlower = new Bitmap({
-            x: 94,
-            y: 47,
-            image: resource.get('boomFlower'),
-            rect: [0, 0, 542, 350]
-          })
+          // replay again.
+          var scene = that.activeScene.id
+          switch (scene) {
+            case 'game-pre-scene':
+              if (that.activeQuestion === 1) {
+                that.replaceCards('pre')
+              } else {
+                that.replaceCards('pre2')
+              }
+              break
 
-          that.gamePlayCardsScene.addChild(boomFlower)
+            case 'game-early-scene':
+              if (that.activeQuestion === 1) {
+                that.replaceCards('early')
+              } else {
+                that.replaceCards('early2')
+              }
+              break
+
+            case 'game-speech-scene':
+              if (that.activeQuestion === 1) {
+                that.replaceCards('speech')
+              } else {
+                that.replaceCards('speech2')
+              }
+              break
+          }
         }
       }
     }
@@ -1096,6 +1155,12 @@ var game = {
       rect: [0, 0, 42, 42]
     })
 
+    star.on(Hilo.event.POINTER_START, e => {
+      e.stopImmediatePropagation()
+
+      this.boomFlower()(this.gameLinkScene)
+    })
+
     var bird = this.bird = new Bitmap({
       x: 720,
       y: 265,
@@ -1203,13 +1268,26 @@ var game = {
       'rgb(17,137,135)',
       'rgb(251,78,9)',
       'rgb(253,134,9)',
-      'rgb(251,25,8)'
+      'rgb(251,25,8)',
     ]
 
     var alphaBats = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
-    function addAgain() {
-      that.gameLinkScene.addChild(that.removedView)
+    function addAgain(item) {
+      if (item) {
+        var post = item.id.match(/-\d+$/)
+        var targetText = 'link-bg-alpha' + post
+        var targetIndex = null
+        that.removedViews.forEach((item, index) => {
+          if (item.id === targetText) {
+            targetIndex = index
+          }
+        })
+        if (targetIndex !== null) {
+          var result = that.removedViews.splice(targetIndex, 1)
+          that.gameLinkScene.addChild(result[0])
+        }
+      }
     }
 
     function generateCards(animals) {
@@ -1241,7 +1319,7 @@ var game = {
 
           bg.on(Hilo.event.POINTER_START, e => {
             e.stopImmediatePropagation()
-            addAgain()
+            addAgain(bg)
           })
 
           var imgX = ''
@@ -1438,7 +1516,7 @@ var game = {
 
           img.on(Hilo.event.POINTER_START, e => {
             e.stopImmediatePropagation()
-            addAgain()
+            addAgain(img)
           })
 
           var bgAlpha = new DOMElement({
@@ -1460,11 +1538,11 @@ var game = {
             x: x,
             y: y,
           })
-            result.push(bgAlpha)
+          result.push(bgAlpha)
 
           bgAlpha.on(Hilo.event.POINTER_START, e => {
             e.stopImmediatePropagation()
-            that.removedView = bgAlpha
+            that.removedViews.push(bgAlpha)
             that.gameLinkScene.removeChild(bgAlpha)
           })
         })
@@ -1475,7 +1553,7 @@ var game = {
 
     this.gameLinkScene.addChild(...generateCards(cardsArr))
   },
-  removedView: null,
+  removedViews: [],
 };
 
 module.exports = game;
