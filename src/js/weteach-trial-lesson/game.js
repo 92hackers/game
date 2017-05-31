@@ -172,6 +172,11 @@ var game = {
     scene.addChild(bg, title, pre, early, speech);
     scene.addTo(this.stage)
   },
+  clearBoomFlower: function() {
+    if (this.boomFlower) {
+      this.gamePlayCardsScene.removeChild(this.boomFlower)
+    }
+  },
   preScene: function() {
     var atTheZoo = this.atTheZoo = new Bitmap({
       x: innerBgGapWidth,
@@ -256,6 +261,8 @@ var game = {
       this.activeQuestion = 1
       this.gamePreScene.visible = false
       this.replaceCards('pre')
+
+      this.clearBoomFlower()
       this.gamePlayCardsScene.visible = true
     })
 
@@ -272,6 +279,8 @@ var game = {
       this.activeQuestion = 2
       this.gamePreScene.visible = false
       this.replaceCards('pre2')
+
+      this.clearBoomFlower()
       this.gamePlayCardsScene.visible = true
     })
 
@@ -388,6 +397,8 @@ var game = {
       this.activeQuestion = 1
       this.gameEarlyScene.visible = false
       this.replaceCards('early')
+
+      this.clearBoomFlower()
       this.gamePlayCardsScene.visible = true
     })
 
@@ -404,6 +415,8 @@ var game = {
       this.activeQuestion = 2
       this.gameEarlyScene.visible = false
       this.replaceCards('early2')
+
+      this.clearBoomFlower()
       this.gamePlayCardsScene.visible = true
     })
 
@@ -519,6 +532,8 @@ var game = {
       this.activeQuestion = 1
       this.gameSpeechScene.visible = false
       this.replaceCards('speech')
+
+      this.clearBoomFlower()
       this.gamePlayCardsScene.visible = true
     })
 
@@ -535,6 +550,8 @@ var game = {
       this.activeQuestion = 2
       this.gameSpeechScene.visible = false
       this.replaceCards('speech2')
+
+      this.clearBoomFlower()
       this.gamePlayCardsScene.visible = true
     })
 
@@ -744,7 +761,7 @@ var game = {
         }
 
         if (post[0] === '-0' && cardClick === 0) {
-          var boomFlower = new Bitmap({
+          var boomFlower = that.boomFlower = new Bitmap({
             x: 94,
             y: 47,
             image: resource.get('boomFlower'),
@@ -830,23 +847,132 @@ var game = {
         })
         result.push(bg)
 
+        var imgX = ''
+        switch (item) { // transform some words.
+          case 'brownBird':
+            imgX = x + 30
+            break
+
+          case 'frog':
+            imgX = x + 30
+            break
+
+          case 'chicken':
+            imgX = x + 24
+            break
+
+          case 'sheep':
+            imgX = x + 20
+            break
+
+          case 'horse':
+            imgX = x + 24
+            break
+
+          case 'elephant':
+            imgX = x + 30
+            break
+
+          case 'kitten':
+            imgX = x + 30
+            break
+
+          case 'lion':
+            imgX = x + 30
+            break
+
+          case 'bear':
+            imgX = x + 30
+            break
+
+          case 'monkey':
+            imgX = x + 24
+            break
+
+          case 'shark':
+            imgX = x + 30
+            break
+
+          case 'whale':
+            imgX = x + 30
+            break
+
+          case 'cut':
+            imgX = x + 24
+            break
+
+          case 'fallOver':
+            imgX = x + 15
+            break
+
+          case 'pizza':
+            imgX = x + 10
+            break
+
+          case 'saltPepper':
+            imgX = x + 10
+            break
+
+          case 'medicine':
+            imgX = x + 30
+            break
+
+          case 'honey':
+            imgX = x + 20
+            break
+
+          case 'jam':
+            imgX = x + 30
+            break
+
+          case 'fridge':
+            imgX = x + 34
+            break
+
+          case 'puppy':
+            imgX = x + 10
+            break
+
+          case 'skates':
+            imgX = x + 10
+            break
+
+          case 'panda':
+            imgX = x + 10
+            break
+
+          case 'pirate':
+            imgX = x + 10
+            break
+
+          case 'rabbit':
+            imgX = x + 30
+            break
+
+          default:
+            imgX = x
+        }
+
         // image.
         var img = new Bitmap({
           id: 'cardAnimal-' + index,
-          x: x + 10,
+          x: imgX,
           y: y + 40,
           image: resource.get(item),
-          rect: [0, 0, cardWidth - 20, 90]
+          width: cardWidth,
+          height: cardHeight / 2,
+          //   rect: [0, 0, cardWidth, cardHeight]
         })
         result.push(img)
 
         // bind click event on elements.
         var list = [bg, img, txtBg, word]
 
+        var that = this
         list.forEach(item => {
-          item.on(Hilo.event.POINTER_START, e => {
+          item.on(Hilo.event.POINTER_START, function(e) {
             e.stopImmediatePropagation()
-            ifRemoveCard(item)
+            ifRemoveCard.call(that, item)
           })
         })
       })
@@ -1010,6 +1136,8 @@ var game = {
 
       this.activeQuestion = 2
       this.gameLinkScene.visible = false
+
+      this.clearBoomFlower()
       this.gamePlayCardsScene.visible = true
     })
 
@@ -1116,10 +1244,193 @@ var game = {
             addAgain()
           })
 
+          var imgX = ''
+          var imgY = ''
+          switch (item) { // transform some words.
+            case 'brownBird':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'tiger':
+              imgX = x + 24
+              imgY = y + 10
+              break
+
+            case 'monkey':
+              imgX = x + 35
+              imgY = y
+              break
+
+            case 'duck':
+              imgX = x + 20
+              imgY = y + 10
+              break
+
+            case 'cow':
+              imgX = x + 20
+              imgY = y + 10
+              break
+
+            case 'rats':
+              imgX = x + 24
+              imgY = y + 5
+              break
+
+            case 'horse':
+              imgX = x + 30
+              imgY = y
+              break
+
+            case 'crocodile':
+              imgX = x + 20
+              imgY = y + 10
+              break
+
+            case 'elephant':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'frog':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'kitten':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'dolphin':
+              imgX = x + 20
+              imgY = y + 10
+              break
+
+            case 'panda':
+              imgX = x + 30
+              imgY = y + 5
+              break
+
+            case 'lion':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'rabbit':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'skates':
+              imgX = x + 30
+              imgY = y + 5
+              break
+
+            case 'ill':
+              imgX = x + 30
+              imgY = y + 5
+              break
+
+            case 'jam':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'pizza':
+              imgX = x + 30
+              imgY = y
+              break
+
+            case 'honey':
+              imgX = x + 30
+              imgY = y
+              break
+
+            case 'meal':
+              imgX = x + 25
+              imgY = y + 10
+              break
+
+            case 'saltPepper':
+              imgX = x + 25
+              imgY = y + 3
+              break
+
+            case 'medicine':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'chemist':
+              imgX = x + 20
+              imgY = y + 8
+              break
+
+            case 'cook':
+              imgX = x + 25
+              imgY = y + 10
+              break
+
+            case 'fallOver':
+              imgX = x + 20
+              imgY = y + 5
+              break
+
+            case 'cut':
+              imgX = x + 30
+              imgY = y
+              break
+
+            case 'fridge':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'pirate':
+              imgX = x + 30
+              imgY = y
+              break
+
+            case 'puppy':
+              imgX = x + 20
+              imgY = y + 5
+              break
+
+            case 'whale':
+              imgX = x + 35
+              imgY = y
+              break
+
+            case 'shark':
+              imgX = x + 35
+              imgY = y
+              break
+
+            case 'bear':
+              imgX = x + 40
+              imgY = y
+              break
+
+            case 'kangaroo':
+              imgX = x + 20
+              imgY = y + 10
+              break
+
+            case 'chicken':
+              imgX = x + 30
+              imgY = y
+              break
+
+            default:
+              imgX = x + 20
+              imgY = y
+          }
+
           var img = new Bitmap({
             id: 'link-img-' + index,
-            x: x + 20,
-            y: y,
+            x: imgX,
+            y: imgY,
             image: resource.get(item),
             rect: [0, 0, 100, whiteBgHeight]
           })
@@ -1149,7 +1460,7 @@ var game = {
             x: x,
             y: y,
           })
-          result.push(bgAlpha)
+            result.push(bgAlpha)
 
           bgAlpha.on(Hilo.event.POINTER_START, e => {
             e.stopImmediatePropagation()
