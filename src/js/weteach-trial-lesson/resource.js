@@ -74,6 +74,8 @@ var resource = {
     { id: 'jam', src: 'src/images/jam.jpg' },
     { id: 'pizza', src: 'src/images/pizza.jpg' },
     { id: 'medicine', src: 'src/images/medicine.jpg' },
+    
+    { id: 'balloon', src: 'src/images/balloon.png' },
   ],
   load: function() {
     var res = this.res;

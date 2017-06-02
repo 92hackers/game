@@ -11,6 +11,8 @@ var DOMElement = require('../hilo/view/DOMElement')
 var Container = require('../hilo/view/Container')
 var Drawable = require('../hilo/view/Drawable')
 var Class = require('../hilo/core/Class')
+var Tween = require('../hilo/tween/Tween')
+var Ease = require('../hilo/tween/Ease')
 
 /**
  * @module weteach-trial-lesson/game
@@ -87,8 +89,9 @@ var game = {
     stage.enableDOMEvent(Hilo.event.POINTER_START, true);
 
     var ticker = this.ticker = new Ticker(60);
-    ticker.addTick(stage);
-    ticker.addTick(this);
+    ticker.addTick(stage)
+    // ticker.addTick(this.tick)
+    ticker.addTick(Tween)
   },
   _initScene: function(properties) {
     var bg = this.bg = new Bitmap({
@@ -277,14 +280,22 @@ var game = {
       rect: [0, 0, 42, 42]
     })
 
+    var that = this
+
     one.on(Hilo.event.POINTER_START, e => {
       e.stopImmediatePropagation()
 
       this.activeQuestion = 1
       this.gamePreScene.visible = false
+      this.gamePlayCardsScene.rem
+
+      // remove added cards.
+      this.currentCards.forEach(function(item) {
+        that.gamePlayCardsScene.removeChild(item)
+      })
+
       this.replaceCards('pre')
 
-      this.clearBoomFlower()
       this.gamePlayCardsScene.visible = true
     })
 
@@ -300,6 +311,10 @@ var game = {
 
       this.activeQuestion = 2
       this.gamePreScene.visible = false
+
+      this.currentCards.forEach(function(item) {
+        that.gamePlayCardsScene.removeChild(item)
+      })
       this.replaceCards('pre2')
 
       this.clearBoomFlower()
@@ -419,11 +434,16 @@ var game = {
       rect: [0, 0, 42, 42]
     })
 
+    var that = this
+
     one.on(Hilo.event.POINTER_START, e => {
       e.stopImmediatePropagation()
 
       this.activeQuestion = 1
       this.gameEarlyScene.visible = false
+      this.currentCards.forEach(function(item) {
+        that.gamePlayCardsScene.removeChild(item)
+      })
       this.replaceCards('early')
 
       this.clearBoomFlower()
@@ -442,6 +462,10 @@ var game = {
 
       this.activeQuestion = 2
       this.gameEarlyScene.visible = false
+
+      this.currentCards.forEach(function(item) {
+        that.gamePlayCardsScene.removeChild(item)
+      })
       this.replaceCards('early2')
 
       this.clearBoomFlower()
@@ -560,11 +584,17 @@ var game = {
       rect: [0, 0, 42, 42]
     })
 
+    var that = this
+
     one.on(Hilo.event.POINTER_START, e => {
       e.stopImmediatePropagation()
 
       this.activeQuestion = 1
       this.gameSpeechScene.visible = false
+
+      this.currentCards.forEach(function(item) {
+        that.gamePlayCardsScene.removeChild(item)
+      })
       this.replaceCards('speech')
 
       this.clearBoomFlower()
@@ -583,6 +613,10 @@ var game = {
 
       this.activeQuestion = 2
       this.gameSpeechScene.visible = false
+
+      this.currentCards.forEach(function(item) {
+        that.gamePlayCardsScene.removeChild(item)
+      })
       this.replaceCards('speech2')
 
       this.clearBoomFlower()
@@ -803,6 +837,9 @@ var game = {
         if (post[0] === '-0' && cardClick === 0) {
           // replay again.
           var scene = that.activeScene.id
+          this.currentCards.forEach(function(item) {
+            that.gamePlayCardsScene.removeChild(item)
+          })
           switch (scene) {
             case 'game-pre-scene':
               if (that.activeQuestion === 1) {
@@ -846,14 +883,17 @@ var game = {
             style: {
               background: '#fff',
               position: 'absolute',
-              borderRadius: '20px',
+              borderRadius: '10px',
               boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)'
             }
           }),
-          width: cardWidth,
-          height: cardHeight,
-          x: x,
-          y: y,
+          width: cardWidth / 2,
+          height: cardHeight / 2,
+          x: x + cardWidth / 2,
+          y: y + cardHeight / 2,
+          pivotX: cardWidth / 4,
+          pivotY: cardHeight / 4,
+          alpha: 0,
         })
         result.push(txtBg)
 
@@ -871,20 +911,22 @@ var game = {
           default:
             txt = item
         }
-
         var word = new DOMElement({
           id: 'cardText-' + index,
           element: Hilo.createElement('p', {
             style: {
               position: 'absolute',
-              fontSize: '24px',
+              fontSize: '14px',
             },
             innerText: txt,
           }),
-          x: x,
-          y: y + 30,
-          width: cardWidth,
-          height: '50',
+          x: x + cardWidth / 2,
+          y: y + 55,
+          width: cardWidth / 2,
+          height: '25',
+          pivotX: cardWidth / 4,
+          pivotY: '12.5',
+          alpha: 0,
         })
         result.push(word)
 
@@ -895,14 +937,17 @@ var game = {
             style: {
               background: '#fff',
               position: 'absolute',
-              borderRadius: '20px',
+              borderRadius: '10px',
               boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)'
             }
           }),
-          width: cardWidth,
-          height: cardHeight,
-          x: x,
-          y: y,
+          width: cardWidth / 2,
+          height: cardHeight / 2,
+          x: x + cardWidth / 2,
+          y: y + cardHeight / 2,
+          pivotX: cardWidth / 4,
+          pivotY: cardHeight / 4,
+          alpha: 0,
         })
         result.push(bg)
 
@@ -1015,31 +1060,69 @@ var game = {
         // image.
         var img = new Bitmap({
           id: 'cardAnimal-' + index,
-          x: imgX,
-          y: y + 40,
+          x: imgX + cardWidth / 2,
+          y: y + 40 + cardHeight / 4,
           image: resource.get(item),
-          width: cardWidth,
-          height: cardHeight / 2,
-          //   rect: [0, 0, cardWidth, cardHeight]
+          width: cardWidth / 2,
+          height: cardHeight / 4,
+          pivotX: cardWidth / 4,
+          pivotY: cardHeight / 8,
+          alpha: 0,
         })
         result.push(img)
 
         // bind click event on elements.
         var list = [bg, img, txtBg, word]
 
-        var that = this
         list.forEach(item => {
+          // store item.
+          that.currentCards.push(item)
+
+          // bind event.
           item.on(Hilo.event.POINTER_START, function(e) {
             e.stopImmediatePropagation()
             ifRemoveCard.call(that, item)
           })
+
+          // bind transition.
+          var options = {
+            alpha: 1,
+            rotation: 720,
+            scaleX: 2,
+            scaleY: 2
+          }
+          var params = {
+            duration: 1000,
+            delay: 500,
+            ease: Ease.Quad.EaseIn,
+          }
+          Tween.to(item, options, params)
+
         })
       })
 
       return result
     }
 
-    this.gamePlayCardsScene.addChild(...generateCards(that.generateAnimals(type)))
+    var cards = generateCards(that.generateAnimals(type))
+    var cardsGroup = []
+    for (var i = 0; i < 6; i++) {
+      cardsGroup.push(cards.slice(4 * i, (4 * i) + 4))
+    }
+
+    // display cards in queue.
+    cardsGroup.forEach(function(item, index) {
+      (function(index, item) {
+        console.log(index);
+        setTimeout(function() {
+          console.log(that);
+          console.log(item);
+          that.gamePlayCardsScene.addChild(...item)
+        }, 1000 * index)
+      })(index, item)
+    })
+
+    // this.gamePlayCardsScene.addChild(...generateCards([that.generateAnimals(type).pop()]))
   },
   generateAnimals: function(type) {
     var animals = []
@@ -1185,6 +1268,11 @@ var game = {
       }
 
       var scene = that.activeScene.id
+
+      this.currentCards.forEach(function(item) {
+        that.gamePlayCardsScene.removeChild(item)
+      })
+
       switch (scene) {
         case 'game-pre-scene':
           this.replaceCards('pre2')
@@ -1554,6 +1642,7 @@ var game = {
     this.gameLinkScene.addChild(...generateCards(cardsArr))
   },
   removedViews: [],
+  currentCards: [], //  store current cards in scenes.
 };
 
 module.exports = game;
